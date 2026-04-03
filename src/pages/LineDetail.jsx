@@ -58,7 +58,7 @@ export default function LineDetail() {
             {/* BACK BUTTON (Sesuai Desain Awal) */}
             <button
                 onClick={() => navigate(-1)}
-                className="absolute top-6 right-6 z-50 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg shadow-red-900/40 transition-all duration-200"
+                className="absolute top-6 right-6 z-50 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg shadow-red-900/40 transition-all duration-200 cursor-pointer"
             >
                 Back
             </button>
