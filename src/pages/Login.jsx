@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bgImage from '../assets/login/bg-login.png'
 import { CiUser } from 'react-icons/ci';
-import { FaUnlockKeyhole } from 'react-icons/fa6';
+import { CiLock } from "react-icons/ci";
 
 
 export default function Login() {
@@ -56,87 +56,77 @@ export default function Login() {
                         LOGIN SYSTEM
                     </h1>
                 </div>
-
-                <div className=" backdrop-blur-md border border-solid border-amber-50 rounded-[100px] p-12 shadow-2xl shadow-black/60">
-                    <form className="space-y-7" onSubmit={handleSubmit}>
-                        {/* Username */}
-                        <div className="relative">
-                            <div className='flex gap-2 mb-5'>
-                                <CiUser className='text-4xl text-[#8FE2F2]' />
-                                <label className="block text-2xl font-small text-white mb-2 flex items-center gap-2.5">
-                                    Username
-                                </label>
-                            </div>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="w-full pl-4 pr-4 py-3.5 bg-[#1e293b]/60 border border-cyan-900/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200"
-                                placeholder="Masukkan username"
-                                autoComplete="username"
-                            />
-                        </div>
-
-                        {/* Password */}
-                        <div className="relative">
-                            <div className="flex gap-5 mb-5">
-                                <FaUnlockKeyhole className='text-3xl text-[#8FE2F2]' />
-                                <label className="block text-2xl font-small text-white mb-2 flex items-center gap-2.5">
-                                    Password
-                                </label>
-                            </div>
+                <div className="flex justify-center">
+                    <div className="justify-center flex backdrop-blur-md border border-solid w-150 items-center border-amber-50 rounded-[100px] p-12 shadow-2xl shadow-black/60">
+                        <form className="space-y-7 w-120" onSubmit={handleSubmit}>
+                            {/* Username */}
                             <div className="relative">
+                                <div className='flex gap-2 mb-5'>
+                                    <CiUser className='text-4xl text-[#8FE2F2]' />
+                                    <label className="block text-2xl font-small text-white mb-2 flex items-center gap-2.5">
+                                        Username
+                                    </label>
+                                </div>
                                 <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-4 pr-11 py-3.5 bg-[#1e293b]/60 border border-cyan-900/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200"
-                                    placeholder="Masukkan password"
-                                    autoComplete="current-password"
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="w-full pl-4 pr-4 py-3.5 bg-[#1e293b]/60 border border-cyan-900/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200"
+                                    placeholder="Masukkan username"
+                                    autoComplete="username"
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400 hover:text-cyan-300 focus:outline-none transition-colors"
-                                >
-                                    {showPassword ? (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    ) : (
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18M9.75 9.75a2.999 2.999 0 004.5 4.5m5.137-5.137a8.002 8.002 0 01-3.137 5.137m-8 0a8.002 8.002 0 01-3.137-5.137" />
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5c4.478 0 8.268 2.943 9.542 7a9.97 9.97 0 01-3.137 5.137" />
-                                        </svg>
-                                    )}
-                                </button>
                             </div>
-                        </div>
 
-                        {/* Remember & Forgot */}
-                        <div className="flex items-center justify-between text-sm">
-                            <label className="flex items-center text-gray-300 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-4 h-4 rounded border border-[#8FE2F2] text-cyan-500 focus:ring-cyan-500/30"
-                                />
-                                <span className="ml-2.5">Remember me</span>
-                            </label>
-                        </div>
+                            {/* Password */}
+                            <div className="relative">
+                                <div className="flex gap-5 mb-5">
+                                    <CiLock className='text-4xl text-[#8FE2F2]' />
+                                    <label className="block text-2xl font-small text-white mb-2 flex items-center gap-2.5">
+                                        Password
+                                    </label>
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full pl-4 pr-11 py-3.5 bg-[#1e293b]/60 border border-cyan-900/50 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500/30 transition-all duration-200"
+                                        placeholder="Masukkan password"
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-cyan-400 hover:text-cyan-300 focus:outline-none transition-colors"
+                                    >
+                                        {showPassword ? (
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        ) : (
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3l18 18M9.75 9.75a2.999 2.999 0 004.5 4.5m5.137-5.137a8.002 8.002 0 01-3.137 5.137m-8 0a8.002 8.002 0 01-3.137-5.137" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5c4.478 0 8.268 2.943 9.542 7a9.97 9.97 0 01-3.137 5.137" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
 
-                        {/* Error / Success Message */}
-                        {error && <p className="text-red-400 text-sm">{error}</p>}
-                        {success && <p className="text-green-400 text-sm">{success}</p>}
+                            {/* Error / Success Message */}
+                            {error && <p className="text-red-400 text-sm">{error}</p>}
+                            {success && <p className="text-green-400 text-sm">{success}</p>}
 
-                        {/* Login Button */}
-                        <button
-                            type="submit"
-                            className="w-full cursor-pointer py-3.5 mb-3 px-6 bg-[#111E2E] border border-[#ffffff] text-white font-semibold rounded-lg "
-                        >
-                            LOGIN
-                        </button>
-                    </form>
+                            {/* Login Button */}
+                            <button
+                                type="submit"
+                                className="w-full cursor-pointer py-3.5 my-4 px-6 bg-[#111E2E] border border-[#ffffff] text-white font-semibold rounded-lg "
+                            >
+                                LOGIN
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
