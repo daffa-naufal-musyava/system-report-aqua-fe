@@ -1,6 +1,10 @@
 // src/pages/Login.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import bgImage from '../assets/login/bg-login.png'
+import { CiUser } from 'react-icons/ci';
+import { FaUnlockKeyhole } from 'react-icons/fa6';
+
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -29,12 +33,12 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0f1c] flex items-center justify-center px-4 font-sans">
-            <div className="w-full max-w-105 space-y-8">
-                <div className="text-center flex gap-10 items-center">
-                    <div className="inline-block ms-4 p-4 mt-4 mb-4">
+        <div className="min-h-screen flex items-center justify-center px-4 font-sans" style={{ backgroundImage: `url(${bgImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundColor: 'rgba(10, 15, 28, 0.8)', backgroundBlendMode: 'overlay' }}>
+            <div className="w-full max-w-200 space-y-8">
+                <div className="text-center flex gap-10 justify-center items-center">
+                    <div className="inline-block p-4 mt-4 mb-4">
                         <svg
-                            className="w-8 h-8 text-cyan-400"
+                            className="w-20 h-20 text-cyan-400"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -48,19 +52,21 @@ export default function Login() {
                             />
                         </svg>
                     </div>
-                    <h1 className="text-3xl font-bold text-[#8FE2F2] tracking-wider">
-                        SYSTEM LOGIN
+                    <h1 className="text-3xl font-bold text-amber-50 tracking-wider text-center">
+                        LOGIN SYSTEM
                     </h1>
                 </div>
-                <div className="h-0.5 w-auto bg-linear-to-r from-cyan-500 to-blue-500 mx-auto mt-3 rounded-full"></div>
 
-                <div className="bg-[#111827]/70 backdrop-blur-md border border-[#8FE2F2] rounded-xl p-8 shadow-2xl shadow-black/60">
+                <div className=" backdrop-blur-md border border-solid border-amber-50 rounded-[100px] p-12 shadow-2xl shadow-black/60">
                     <form className="space-y-7" onSubmit={handleSubmit}>
                         {/* Username */}
                         <div className="relative">
-                            <label className="block text-sm font-medium text-cyan-300 mb-2 flex items-center gap-2.5">
-                                Username
-                            </label>
+                            <div className='flex gap-2 mb-5'>
+                                <CiUser className='text-4xl text-[#8FE2F2]' />
+                                <label className="block text-2xl font-small text-white mb-2 flex items-center gap-2.5">
+                                    Username
+                                </label>
+                            </div>
                             <input
                                 type="text"
                                 value={username}
@@ -73,9 +79,12 @@ export default function Login() {
 
                         {/* Password */}
                         <div className="relative">
-                            <label className="block text-sm font-medium text-cyan-300 mb-2 flex items-center gap-2.5">
-                                Password
-                            </label>
+                            <div className="flex gap-5 mb-5">
+                                <FaUnlockKeyhole className='text-3xl text-[#8FE2F2]' />
+                                <label className="block text-2xl font-small text-white mb-2 flex items-center gap-2.5">
+                                    Password
+                                </label>
+                            </div>
                             <div className="relative">
                                 <input
                                     type={showPassword ? 'text' : 'password'}
@@ -123,18 +132,10 @@ export default function Login() {
                         {/* Login Button */}
                         <button
                             type="submit"
-                            className="w-full py-3.5 px-6 bg-linear-to-r from-blue-700 to-cyan-600 hover:from-blue-600 hover:to-cyan-500 text-white font-semibold rounded-lg shadow-lg shadow-cyan-900/40 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 transition-all duration-200 transform hover:scale-[1.02] active:scale-95"
+                            className="w-full cursor-pointer py-3.5 mb-3 px-6 bg-[#111E2E] border border-[#ffffff] text-white font-semibold rounded-lg "
                         >
                             LOGIN
                         </button>
-                        <div className="flex justify-center">
-                            <a
-                                href="#"
-                                className="text-cyan-400 hover:text-cyan-300 transition-colors"
-                            >
-                                Forgot password?
-                            </a>
-                        </div>
                     </form>
                 </div>
             </div>
