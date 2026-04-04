@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import lineMachine from '../assets/group-52.png';
+import Button from '../components/Button';
 
 // --- ICONS COMPONENTS ---
 const RunIcon = () => (
@@ -56,12 +57,9 @@ export default function LineDetail() {
             <div className="absolute inset-0 bg-black/40 z-0" />
 
             {/* BACK BUTTON (Sesuai Desain Awal) */}
-            <button
-                onClick={() => navigate(-1)}
-                className="absolute top-6 right-6 z-50 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg shadow-red-900/40 transition-all duration-200 cursor-pointer"
-            >
+            <Button variant='primary' size='md' className="absolute top-4 right-4 z-10 bg-red-600! rounded-2xl!" onClick={() => navigate(-1)}>
                 Back
-            </button>
+            </Button>
 
             <div className="relative z-10 p-6 max-w-7xl mx-auto">
 
@@ -169,7 +167,7 @@ export default function LineDetail() {
                                 <button
                                     key={option}
                                     onClick={() => handleOptionClick(option)}
-                                    className="w-full py-4 px-6 text-2xl font-bold hover:bg-cyan-700/50 border border-cyan-600/50 rounded-lg text-white text-center transition-all shadow-md hover:shadow-cyan-500/20"
+                                    className="cursor-pointer w-full py-4 px-6 text-2xl font-bold hover:bg-cyan-700/50 border border-cyan-600/50 rounded-lg text-white text-center transition-all shadow-md hover:shadow-cyan-500/20"
                                 >
                                     {option}
                                 </button>
@@ -178,7 +176,7 @@ export default function LineDetail() {
 
                         <button
                             onClick={() => setSelectedMachine(null)}
-                            className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 font-bold uppercase transition tracking-widest text-xs"
+                            className="cursor-pointer mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 font-bold uppercase transition tracking-widest text-xs"
                         >
                             Close
                         </button>

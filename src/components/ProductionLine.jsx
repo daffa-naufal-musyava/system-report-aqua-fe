@@ -7,17 +7,26 @@ export default function ProductionLine({ line }) {
 
             {/* 1. Nama Line */}
             <div className="flex items-center gap-4 w-full md:w-44 shrink-0">
-                <div className={`w-1.5 h-10 rounded-full bg-${line.color}-500 shadow-[0_0_12px_rgba(var(--color-rgb),0.5)]`} />
+                <div 
+                    className="w-1.5 h-10 rounded-full shadow-lg" 
+                    style={{ 
+                        backgroundColor: line.hexColor,
+                        boxShadow: `0 0 12px ${line.hexColor}80` 
+                    }} 
+                />
                 <div>
-                    <h3 className={`text-lg font-black text-${line.color}-400 uppercase tracking-tighter italic`}>
+                    <h3 
+                        className="text-lg font-black uppercase tracking-tighter italic"
+                        style={{ color: line.hexColor }}
+                    >
                         {line.name}
                     </h3>
                     <p className="text-[10px] text-slate-500 font-mono">STATION_{line.id}00</p>
                 </div>
             </div>
 
-            {/* 2. Chart (Dinamis 1000ms + Scatter Point) */}
-            <div className="flex-1 w-full h-20 min-w-150">
+            {/* 2. Chart */}
+            <div className="flex-1 w-full h-20 min-w-[150px]">
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={line.data}>
                         <defs>
@@ -27,27 +36,27 @@ export default function ProductionLine({ line }) {
                             </linearGradient>
                         </defs>
                         <Area
-                            type="stepAfter" // Bisa diganti 'monotone' jika ingin melengkung halus
+                            type="stepAfter"
                             dataKey="value"
                             stroke={line.hexColor}
                             fill={`url(#poly-${line.id})`}
                             strokeWidth={2}
                             isAnimationActive={false}
-                            dot={{ r: 3, fill: line.hexColor, strokeWidth: 1, stroke: '#0a0f1c' }} // Scatter effect per titik
+                            dot={{ r: 3, fill: line.hexColor, strokeWidth: 1, stroke: '#0a0f1c' }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>
 
-            {/* 3. Status & Link Selengkapnya */}
+            {/* 3. Status & Link */}
             <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-64 shrink-0 border-t md:border-t-0 border-slate-800/50 pt-3 md:pt-0">
                 <div className="flex flex-col items-end">
-                    <span className="px-3 py-1 text-[#d9d9d9] text-[16px] font-black rounded-md bordertracking-widest uppercase">
+                    <span className="px-3 py-1 bg-blue-700 shadow-blue-400 shadow-md text-white text-[16px] font-black rounded-md tracking-widest uppercase">
                         {line.status}
                     </span>
                 </div>
-                <span className='h-15 bg-[#D9D9D9] w-0.5'></span>
-                <Link to={`/line/${line.id}`} className="px-4 py-2 bg-[#D9D9D9] text-black text-[12px] font-black uppercase rounded-md">
+                <span className='h-10 bg-slate-700 w-0.5'></span>
+                <Link to={`/line/${line.id}`} className="px-4 py-2 bg-blue-700 text-white shadow-blue-400 shadow-md text-[12px] font-black uppercase rounded-md hover:bg-blue-600 transition-colors">
                     SELENGKAPNYA
                 </Link>
             </div>

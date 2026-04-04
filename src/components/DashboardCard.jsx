@@ -1,11 +1,21 @@
-export default function DashboardCard({ title, value, change, icon, colorClass, isNegative = false }) {
-  const isTrendUp = change.includes('+');
+export default function DashboardCard({ 
+  title, 
+  value, 
+  change = "", 
+  icon, 
+  colorClass, 
+  isNegative = false 
+}) {
+  const hasChange = change.length > 0;
   
-  // Logika warna teks trend
-  // Jika isNegative true (seperti Downtime), maka trend UP (+) itu buruk (merah)
-  const trendColor = isNegative 
-    ? (isTrendUp ? 'text-rose-400' : 'text-emerald-400') 
-    : (isTrendUp ? 'text-emerald-400' : 'text-rose-400');
+  const isUp = change.includes('+');
+const isDown = change.includes('-');
+
+const trendColor = isUp 
+  ? (isNegative ? 'text-rose-400' : 'text-emerald-400') 
+  : isDown 
+    ? (isNegative ? 'text-emerald-400' : 'text-rose-400') 
+    : 'text-slate-400'; 
 
   return (
     <div className="bg-[#111827]/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-5 shadow-lg flex flex-col justify-between hover:border-slate-600 transition-colors">
@@ -17,10 +27,15 @@ export default function DashboardCard({ title, value, change, icon, colorClass, 
       </div>
       <div>
         <div className="text-3xl font-bold tracking-tight">{value}</div>
-        <div className={`text-xs mt-1 font-medium flex items-center gap-1 ${trendColor}`}>
-          <span className="text-[10px]">{isTrendUp ? '▲' : '▼'}</span>
-          {change}
-        </div>
+        
+        {hasChange && (
+          <div className={`text-xs mt-1 font-medium flex items-center gap-1 ${trendColor}`}>
+            <span className="text-[10px]">
+              {isUp ? '▲' : isDown ? '▼' : '●'}
+            </span>
+            {change}
+          </div>
+        )}
       </div>
     </div>
   );
