@@ -124,10 +124,10 @@ export default function LineDetail() {
                         </p>
                     </div>
 
-                    <Link to="/line-detail"
+                    <Link to="/screen-delivery/:machineId"
                         className="w-50 px-6 py-1.5 hover:bg-cyan-700/50 border border-cyan-600/50 rounded-lg text-white font-bold text-center transition-all uppercase tracking-widest text-xs"
                     >
-                        Line Detail
+                        Screen Delivery
                     </Link>
 
                     <div className="flex gap-6 text-xs font-black uppercase tracking-wider">
@@ -158,7 +158,7 @@ export default function LineDetail() {
             </div>
 
             {/* MODAL POPUP */}
-            {selectedMachine && (
+            {/* {selectedMachine && (
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all">
                     <div className="bg-[#111827] border border-slate-700 rounded-xl p-8 max-w-lg w-full shadow-2xl shadow-cyan-900/30">
                         <div className="space-y-4">
@@ -184,7 +184,7 @@ export default function LineDetail() {
                         </button>
                     </div>
                 </div>
-            )}
+            )} */}
         </div>
     );
 }
