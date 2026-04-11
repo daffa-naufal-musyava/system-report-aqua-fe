@@ -7,7 +7,7 @@ const MachineStats = ({ title }) => (
   <Link to="/shift-summary/:machineId" className="flex flex-col cursor-pointer bg-[#1e293b]/80 border border-slate-600 rounded-sm overflow-hidden text-[8px] w-20 shadow-lg">
     <div className="bg-slate-700 py-0.5 px-1 text-center font-bold border-b border-slate-600 text-[7px]">
       {title} Shiftly
-    </div>
+    </div>    
     {[
       { label: "PR", val: "0%" },
       { label: "PDT", val: "0%" },
