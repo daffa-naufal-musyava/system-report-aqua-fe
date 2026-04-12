@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
-import machineAnalityContext from './MachineContext';
-import { getMachineTrend } from '../api/machineApi';
+import React, { useState, useContext } from "react";
+import MachineAnalyticsContext from "./MachineAnalyticsContext";
+import { getMachineTrend } from "../api/machineAnalyticsApi";
 
 export const MachineAnalyticsProvider = ({ children }) => {
   const [trendData, setTrendData] = useState([]);
@@ -14,7 +14,7 @@ export const MachineAnalyticsProvider = ({ children }) => {
       const data = await getMachineTrend(params);
       setTrendData(data);
     } catch (err) {
-      setError('Gagal mengambil data analytics mesin.');
+      setError("Gagal mengambil data analytics mesin.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -25,21 +25,20 @@ export const MachineAnalyticsProvider = ({ children }) => {
     trendData,
     loading,
     error,
-    fetchTrendData
+    fetchTrendData,
   };
 
   return (
-    <MachineContext.Provider value={value}>
-      {children}
-    </MachineContext.Provider>
+    <MachineAnalyticsContext.Provider value={value}>{children}</MachineAnalyticsContext.Provider>
   );
 };
 
-// Custom hook untuk akses datanya lebih cepat
-export const useMachine = () => {
-  const context = useContext(MachineContext);
+export const useMachineAnalytics = () => {
+  const context = useContext(MachineAnalyticsContext);
   if (!context) {
-    throw new Error('useMachine harus digunakan di dalam MachineAnalyticsProvider');
+    throw new Error(
+      "useMachineAnalytics harus digunakan di dalam MachineAnalyticsProvider",
+    );
   }
   return context;
 };
