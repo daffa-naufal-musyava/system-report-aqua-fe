@@ -12,11 +12,16 @@ export const MachineAnalyticsProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Ambil data trend mesin
+  // Default machineId untuk demo/testing
+  const DEFAULT_MACHINE_ID = "FILLER-01";
   const fetchTrendData = useCallback(async (params) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getMachineTrend(params);
+      // Gunakan default jika tidak ada params
+      const query =
+        params && params.machineId ? params : { machineId: DEFAULT_MACHINE_ID };
+      const data = await getMachineTrend(query);
       setTrendData(data);
     } catch (err) {
       setError("Gagal mengambil data analytics mesin.");
