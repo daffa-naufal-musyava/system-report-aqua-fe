@@ -3,19 +3,20 @@ import DashboardCard from "../components/DashboardCard";
 import ProductionLine from "../components/ProductionLine";
 import { useMachineAnalytics } from "../contexts/MachineAnalyticsProvider";
 
-export default function Dashboard() {
-  const { trendData, loading, fetchTrendData } = useMachineAnalytics();
+  const { trendData, loading, fetchTrendData, dashboardSummary, fetchDashboardSummary } = useMachineAnalytics();
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     fetchTrendData();
+    fetchDashboardSummary();
 
     const interval = setInterval(() => {
       fetchTrendData();
+      fetchDashboardSummary();
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [fetchTrendData]);
+  }, [fetchTrendData, fetchDashboardSummary]);
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white p-4 md:p-8 font-sans">
@@ -23,9 +24,9 @@ export default function Dashboard() {
         {/* KPI Header Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <DashboardCard
-            title="Total Output"
-            value="12,450"
-            change="+2.5%"
+            title="Total Mesin"
+            value={dashboardSummary?.lineStatus?.total ?? '-'}
+            change={null}
             colorClass="text-emerald-400"
             icon={
               <svg
@@ -50,46 +51,25 @@ export default function Dashboard() {
             }
           />
           <DashboardCard
-            title="Efficiency"
-            value="87%"
-            change="+ 1.2%"
+            title="Mesin Berjalan"
+            value={dashboardSummary?.lineStatus?.running ?? '-'}
+            change={null}
             colorClass="text-emerald-400"
             icon={
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             }
           />
           <DashboardCard
-            title="Downtime"
-            value="1.5 hrs"
-            change="- 0.3 hrs"
+            title="Mesin Berhenti"
+            value={dashboardSummary?.lineStatus?.stopped ?? '-'}
+            change={null}
             colorClass="text-rose-400"
             isNegative={true}
             icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="size-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
             }
           />
