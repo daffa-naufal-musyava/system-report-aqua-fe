@@ -18,6 +18,7 @@ const PublicRoute = () => {
     const { user, loading } = useAuth();
     if (loading) return null;
     return !user ? <Outlet /> : <Navigate to="/dashboard" replace />;
+
 };
 
 export const router = createBrowserRouter([
