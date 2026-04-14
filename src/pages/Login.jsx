@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/authContext'; 
 import bgImage from '../assets/login/bg-login.png';
 import { CiUser, CiLock } from 'react-icons/ci';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';

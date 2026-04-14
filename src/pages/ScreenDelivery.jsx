@@ -109,7 +109,6 @@ export default function ScreenDelivery() {
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white relative font-sans p-4 overflow-hidden">
-      {/* Header Info (Bottom in Image) */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
         <div className="flex bg-black border border-slate-800 px-6 py-2 items-center gap-4 shadow-2xl">
           <span className="text-[#70EC4B] text-2xl font-bold italic tracking-tighter">LINE {lineInfo.number}</span>
@@ -125,19 +124,15 @@ export default function ScreenDelivery() {
         BACK
       </button>
 
-      {/* Map Container */}
       <div className="relative w-full h-[90vh] max-w-6xl mx-auto">
-        {/* Background Image */}
         <img 
             src={lineMachine} 
             alt="Layout" 
             className="w-full h-full object-contain opacity-80"
         />
 
-        {/* Render Machines & Stats */}
         {machines.map((m) => (
           <div key={m.id}>
-            {/* The Dot */}
             <div
               className="absolute w-3 h-3 rounded-full shadow-[0_0_10px_rgba(112,236,75,0.8)] cursor-pointer hover:scale-150 transition-transform z-30"
               style={{
@@ -148,7 +143,6 @@ export default function ScreenDelivery() {
               onClick={() => setSelectedMachine(m)}
             />
 
-            {/* The Label */}
             <div 
                 className="absolute text-[9px] font-bold tracking-widest text-slate-300 pointer-events-none whitespace-nowrap"
                 style={{
@@ -160,7 +154,6 @@ export default function ScreenDelivery() {
                 {m.name}
             </div>
 
-            {/* The Table */}
             <div 
                 className="absolute z-20"
                 style={{ top: m.tablePos.top, left: m.tablePos.left }}
