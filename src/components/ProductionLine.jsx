@@ -56,7 +56,7 @@ export default function ProductionLine({ line }) {
                     </span>
                 </div>
                 <span className='h-10 bg-slate-700 w-0.5'></span>
-                <Link to={`/line/${line.id}`} className="px-4 py-2 bg-blue-700 text-white shadow-blue-400 shadow-md text-[12px] font-black uppercase rounded-md hover:bg-blue-600 transition-colors">
+                <Link to="/line/1" className="px-4 py-2 bg-blue-700 text-white shadow-blue-400 shadow-md text-[12px] font-black uppercase rounded-md hover:bg-blue-600 transition-colors">
                     SELENGKAPNYA
                 </Link>
             </div>
