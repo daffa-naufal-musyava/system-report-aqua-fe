@@ -3,6 +3,7 @@ import DashboardCard from "../components/DashboardCard";
 import ProductionLine from "../components/ProductionLine";
 import { useMachineAnalytics } from "../contexts/MachineAnalyticsProvider";
 import { getMachineTrend } from "../api/machineAnalyticsApi";
+import { socket } from "../api/socket";
 
 function Dashboard() {
   const { loading, dashboardSummary, fetchDashboardSummary } =
@@ -11,28 +12,67 @@ function Dashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [lineWithTrend, setLineWithTrend] = useState(null);
 
-  // Ambil data summary (list mesin/line)
+  // 🔹 1. axios (initial load)
   useEffect(() => {
     fetchDashboardSummary();
   }, [fetchDashboardSummary]);
 
-  // Fetch trend untuk satu line (pakai mesin pertama)
+  // 🔥 2. SOCKET (TARO DI SINI)
+  useEffect(() => {
+    const handleData = (data) => {
+      if (!data || data.length === 0) return;
+      if (!Array.isArray(data) || data.length === 0) return;
+      const machine = data[0];
+      if (!machine) return;
+
+      let statusString = "-";
+      if (typeof machine.status === "string" && machine.status.length > 0) {
+        statusString = machine.status;
+      } else if (typeof machine.runStop === "boolean") {
+        statusString = machine.runStop ? "RUNNING" : "STOP";
+      }
+      setLineWithTrend((prev) => ({
+        ...prev,
+        ...machine,
+        id: machine.id,
+        name: "Line 1",
+        status: statusString,
+        hexColor:
+          machine.isRunning || machine.runStop === true ? "#22d3ee" : "#f43f5e",
+        data: prev?.data || [],
+      }));
+
+      // Update KPI status
+      fetchDashboardSummary();
+    };
+
+    socket.off("machineUpdates");
+    socket.on("machineUpdates", handleData);
+
+    return () => {
+      socket.off("machineUpdates", handleData);
+    };
+  }, []);
+
+  // 🔹 3. trend axios
   useEffect(() => {
     const fetchTrend = async () => {
       if (!dashboardSummary?.machines || dashboardSummary.machines.length === 0)
         return;
+
       const machine = dashboardSummary.machines[0];
+
       try {
-        // Ambil data trend dengan range dan window lebih panjang agar chart tidak hanya 1 titik
         const trend = await getMachineTrend({
           machineId: machine.machineId,
           range: "-24h",
           window: "1h",
         });
-        // Transform ke format recharts: { value, time }
+
         const rechartsData = Array.isArray(trend)
           ? trend.map((d) => ({ value: d.value, time: d.time }))
           : [];
+
         setLineWithTrend({
           ...machine,
           data: rechartsData,
@@ -52,32 +92,30 @@ function Dashboard() {
         });
       }
     };
+
     fetchTrend();
   }, [dashboardSummary]);
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* KPI Header Section */}
+        {/* KPI */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <DashboardCard
             title="Total Mesin"
             value={dashboardSummary?.lineStatus?.total ?? "-"}
-            change={null}
             colorClass="text-emerald-400"
           />
 
           <DashboardCard
             title="Mesin Berjalan"
             value={dashboardSummary?.lineStatus?.running ?? "-"}
-            change={null}
             colorClass="text-emerald-400"
           />
 
           <DashboardCard
             title="Mesin Berhenti"
             value={dashboardSummary?.lineStatus?.stopped ?? "-"}
-            change={null}
             colorClass="text-rose-400"
             isNegative={true}
           />
@@ -86,7 +124,7 @@ function Dashboard() {
           <div className="relative h-1/2">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
-              className="w-full h-full bg-[#111827] border border-slate-700/50 rounded-xl px-5 py-4 flex items-center justify-between hover:bg-[#1a2332] transition-colors shadow-lg"
+              className="w-full h-full bg-[#111827] border border-slate-700/50 rounded-xl px-5 py-4 flex items-center justify-between hover:bg-[#1a2332]"
             >
               <span className="font-bold">Notifications</span>
             </button>
@@ -104,7 +142,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Production Line (hanya satu line/mesin) */}
+        {/* Production Line */}
         <div className="space-y-4">
           {loading && !lineWithTrend ? (
             <div className="text-center py-10 text-slate-500">
@@ -116,8 +154,8 @@ function Dashboard() {
                 key={lineWithTrend.id}
                 line={{
                   ...lineWithTrend,
-                  name: "Line 1", // Ganti judul menjadi Line 1
-                  data: Array.isArray (lineWithTrend.data)
+                  name: "Line 1",
+                  data: Array.isArray(lineWithTrend.data)
                     ? lineWithTrend.data
                     : [],
                 }}

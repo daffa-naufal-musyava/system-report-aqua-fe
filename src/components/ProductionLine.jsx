@@ -3,8 +3,7 @@ import { AreaChart, Area, ResponsiveContainer } from "recharts";
 
 export default function ProductionLine({ line }) {
   return (
-    <div className="bg-[#111827]/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 flex flex-col md:flex-row items-center gap-6 hover:border-slate-500/70 transition-all group">
-      {/* 1. Nama Line */}
+    <div className="bg-[#111827]/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 flex flex-col md:flex-row items-center gap-6 md:gap-10 hover:border-slate-500/70 transition-all group">
       <div className="flex items-center gap-4 w-full md:w-44 shrink-0">
         <div
           className="w-1.5 h-10 rounded-full shadow-lg"
@@ -26,8 +25,7 @@ export default function ProductionLine({ line }) {
         </div>
       </div>
 
-      {/* 2. Chart */}
-      <div className="flex-1 w-full h-20 min-w-[150px]">
+      <div className="flex-1 w-full h-20 min-w-40 md:min-w-60 md:mx-4">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={line.data}>
             <defs>
@@ -60,7 +58,6 @@ export default function ProductionLine({ line }) {
         </ResponsiveContainer>
       </div>
 
-      {/* 3. Status & Link */}
       <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-64 shrink-0 border-t md:border-t-0 border-slate-800/50 pt-3 md:pt-0">
         <div className="flex flex-col items-end">
           <span className="px-3 py-1 bg-blue-700 shadow-blue-400 shadow-md text-white text-[16px] font-black rounded-md tracking-widest uppercase">
