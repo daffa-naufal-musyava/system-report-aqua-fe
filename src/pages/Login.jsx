@@ -58,7 +58,7 @@ export default function Login() {
                             </div>
                         </div>
                         {error && <p className="text-red-400 text-xs text-center">{error}</p>}
-                        <Button type="submit" disabled={loading} className="w-full py-2 bg-[#111E2E] border border-white rounded text-white uppercase text-sm font-bold">
+                        <Button type="submit" disabled={loading} className="w-full py-2 bg-[#111E2E]! border border-white rounded text-white uppercase text-sm font-bold">
                             {loading ? 'Authenticating...' : 'Login'}
                         </Button>
                     </form>

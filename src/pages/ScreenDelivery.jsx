@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate,Link } from "react-router-dom";
-import lineMachine from "../assets/group-52.png"; // Pastikan path benar
+import mesintopologi from "../assets/login/mesintopologi.png"; // Pastikan path benar
+import { useMachineSummary } from "../contexts/machineSummaryProvider";
 
 // Komponen Tabel Kecil untuk setiap mesin
 const MachineStats = ({ title }) => (
@@ -26,6 +27,7 @@ export default function ScreenDelivery() {
   const { lineId } = useParams();
   const navigate = useNavigate();
   const [selectedMachine, setSelectedMachine] = useState(null);
+  const { machines, loading, lineStatus } = useMachineSummary();
 
   const lineInfo = {
     number: lineId || "1",
@@ -126,7 +128,7 @@ export default function ScreenDelivery() {
 
       <div className="relative w-full h-[90vh] max-w-6xl mx-auto">
         <img 
-            src={lineMachine} 
+            src={mesintopologi} 
             alt="Layout" 
             className="w-full h-full object-contain opacity-80"
         />
