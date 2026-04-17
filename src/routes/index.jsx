@@ -37,5 +37,4 @@ export const router = createBrowserRouter([
             { path: '/machine-detail/:machineId', element: <MachineDetail /> },
         ]
     },
-    { path: '*', element: <Navigate to="/dashboard" replace /> }
 ]);

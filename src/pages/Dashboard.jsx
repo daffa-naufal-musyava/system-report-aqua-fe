@@ -49,22 +49,21 @@ function Dashboard() {
         },
       ];
 
-      // Status dinamis: STOP bertahan lebih lama
       if (!running) {
         stopCounter++;
-        // STOP bertahan 4 detik (4 interval)
         if (stopCounter >= 4) {
           running = true;
           stopCounter = 0;
         }
       } else {
-        // 20% kemungkinan masuk STOP
         if (Math.random() > 0.8) {
           running = false;
           stopCounter = 0;
         }
       }
-      stopped = running ? 3 : 7;
+      const total = 10;
+      stopped = running ? 0 : 7;
+      const runningCount = running ? total : total - stopped;
       setLineWithTrend({
         id: 1,
         name: "Line 1",
@@ -74,9 +73,9 @@ function Dashboard() {
       });
       setDashboardSummary({
         lineStatus: {
-          total: 10,
-          running: running ? 7 : 3,
-          stopped: running ? 3 : 7,
+          total,
+          running: runningCount,
+          stopped,
         },
       });
     }, 1000);
@@ -104,7 +103,6 @@ function Dashboard() {
             colorClass="text-rose-400"
             isNegative={true}
           />
-          {/* Notif */}
           <div className="relative h-1/2">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
@@ -118,7 +116,7 @@ function Dashboard() {
                   Recent Alerts
                 </div>
                 <div className="px-4 py-3 text-sm text-slate-300">
-                  Line 2: Motor temperature high (85°C)
+                  Line 1: Motor temperature high (85°C)
                 </div>
               </div>
             )}
