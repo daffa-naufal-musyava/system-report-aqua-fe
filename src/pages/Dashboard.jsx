@@ -117,7 +117,7 @@ function Dashboard() {
                 line={{
                   ...lineWithTrend,
                   name: "Line 1", // Ganti judul menjadi Line 1
-                  data: Array.isArray(lineWithTrend.data)
+                  data: Array.isArray (lineWithTrend.data)
                     ? lineWithTrend.data
                     : [],
                 }}

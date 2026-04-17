@@ -1,10 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'https://66c10dvz-3006.asse.devtunnels.ms/api',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: "https://66c10dvz-3006.asse.devtunnels.ms/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 // Interceptor untuk otomatis masukin token ke header setiap kali request (untuk dashboard dll)
