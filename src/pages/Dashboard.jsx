@@ -1,100 +1,87 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import DashboardCard from "../components/DashboardCard";
 import ProductionLine from "../components/ProductionLine";
-import { useMachineAnalytics } from "../contexts/MachineAnalyticsProvider";
-import { getMachineTrend } from "../api/machineAnalyticsApi";
-import { socket } from "../api/socket";
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function Dashboard() {
-  const { loading, dashboardSummary, fetchDashboardSummary } =
-    useMachineAnalytics();
-
+  // Dummy KPI
+  const [dashboardSummary, setDashboardSummary] = useState({
+    lineStatus: {
+      total: 10,
+      running: 7,
+      stopped: 3,
+    },
+  });
   const [showNotifications, setShowNotifications] = useState(false);
   const [lineWithTrend, setLineWithTrend] = useState(null);
+  const intervalRef = useRef();
 
-  // 🔹 1. axios (initial load)
+  // Dummy data generator
   useEffect(() => {
-    fetchDashboardSummary();
-  }, [fetchDashboardSummary]);
+    // Initial dummy data
+    let dummyData = Array.from({ length: 20 }, (_, i) => ({
+      value: getRandomInt(60, 100),
+      time: `${i}:00`,
+    }));
+    let running = true;
+    let stopped = 3;
+    let stopCounter = 0;
+    let stopDuration = 0;
 
-  // 🔥 2. SOCKET (TARO DI SINI)
-  useEffect(() => {
-    const handleData = (data) => {
-      if (!data || data.length === 0) return;
-      if (!Array.isArray(data) || data.length === 0) return;
-      const machine = data[0];
-      if (!machine) return;
+    setLineWithTrend({
+      id: 1,
+      name: "Line 1",
+      status: "RUNNING",
+      hexColor: "#22d3ee",
+      data: dummyData,
+    });
 
-      let statusString = "-";
-      if (typeof machine.status === "string" && machine.status.length > 0) {
-        statusString = machine.status;
-      } else if (typeof machine.runStop === "boolean") {
-        statusString = machine.runStop ? "RUNNING" : "STOP";
+    intervalRef.current = setInterval(() => {
+      // Geser data, tambah data baru di akhir
+      dummyData = [
+        ...dummyData.slice(1),
+        {
+          value: getRandomInt(60, 100),
+          time: `${parseInt(dummyData[dummyData.length - 1].time) + 1}:00`,
+        },
+      ];
+
+      // Status dinamis: STOP bertahan lebih lama
+      if (!running) {
+        stopCounter++;
+        // STOP bertahan 4 detik (4 interval)
+        if (stopCounter >= 4) {
+          running = true;
+          stopCounter = 0;
+        }
+      } else {
+        // 20% kemungkinan masuk STOP
+        if (Math.random() > 0.8) {
+          running = false;
+          stopCounter = 0;
+        }
       }
-      setLineWithTrend((prev) => ({
-        ...prev,
-        ...machine,
-        id: machine.id,
+      stopped = running ? 3 : 7;
+      setLineWithTrend({
+        id: 1,
         name: "Line 1",
-        status: statusString,
-        hexColor:
-          machine.isRunning || machine.runStop === true ? "#22d3ee" : "#f43f5e",
-        data: prev?.data || [],
-      }));
-
-      // Update KPI status
-      fetchDashboardSummary();
-    };
-
-    socket.off("machineUpdates");
-    socket.on("machineUpdates", handleData);
-
-    return () => {
-      socket.off("machineUpdates", handleData);
-    };
+        status: running ? "RUNNING" : "STOP",
+        hexColor: running ? "#22d3ee" : "#f43f5e",
+        data: dummyData,
+      });
+      setDashboardSummary({
+        lineStatus: {
+          total: 10,
+          running: running ? 7 : 3,
+          stopped: running ? 3 : 7,
+        },
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
   }, []);
-
-  // 🔹 3. trend axios
-  useEffect(() => {
-    const fetchTrend = async () => {
-      if (!dashboardSummary?.machines || dashboardSummary.machines.length === 0)
-        return;
-
-      const machine = dashboardSummary.machines[0];
-
-      try {
-        const trend = await getMachineTrend({
-          machineId: machine.machineId,
-          range: "-24h",
-          window: "1h",
-        });
-
-        const rechartsData = Array.isArray(trend)
-          ? trend.map((d) => ({ value: d.value, time: d.time }))
-          : [];
-
-        setLineWithTrend({
-          ...machine,
-          data: rechartsData,
-          id: machine.machineId,
-          name: "Line 1",
-          status: machine.status,
-          hexColor: machine.isRunning ? "#22d3ee" : "#f43f5e",
-        });
-      } catch {
-        setLineWithTrend({
-          ...machine,
-          data: [],
-          id: machine.machineId,
-          name: "Line 1",
-          status: machine.status,
-          hexColor: machine.isRunning ? "#22d3ee" : "#f43f5e",
-        });
-      }
-    };
-
-    fetchTrend();
-  }, [dashboardSummary]);
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white p-4 md:p-8 font-sans">
@@ -106,20 +93,17 @@ function Dashboard() {
             value={dashboardSummary?.lineStatus?.total ?? "-"}
             colorClass="text-emerald-400"
           />
-
           <DashboardCard
             title="Mesin Berjalan"
             value={dashboardSummary?.lineStatus?.running ?? "-"}
             colorClass="text-emerald-400"
           />
-
           <DashboardCard
             title="Mesin Berhenti"
             value={dashboardSummary?.lineStatus?.stopped ?? "-"}
             colorClass="text-rose-400"
             isNegative={true}
           />
-
           {/* Notif */}
           <div className="relative h-1/2">
             <button
@@ -128,7 +112,6 @@ function Dashboard() {
             >
               <span className="font-bold">Notifications</span>
             </button>
-
             {showNotifications && (
               <div className="absolute top-full right-0 mt-2 w-64 bg-[#1e293b] border border-slate-700/50 rounded-xl shadow-2xl z-50">
                 <div className="px-4 py-2 text-xs text-slate-400 border-b border-slate-700">
@@ -141,26 +124,23 @@ function Dashboard() {
             )}
           </div>
         </div>
-
         {/* Production Line */}
         <div className="space-y-4">
-          {loading && !lineWithTrend ? (
-            <div className="text-center py-10 text-slate-500">
-              Fetching Real-time Data...
-            </div>
+          {lineWithTrend ? (
+            <ProductionLine
+              key={lineWithTrend.id}
+              line={{
+                ...lineWithTrend,
+                name: "Line 1",
+                data: Array.isArray(lineWithTrend.data)
+                  ? lineWithTrend.data
+                  : [],
+              }}
+            />
           ) : (
-            lineWithTrend && (
-              <ProductionLine
-                key={lineWithTrend.id}
-                line={{
-                  ...lineWithTrend,
-                  name: "Line 1",
-                  data: Array.isArray(lineWithTrend.data)
-                    ? lineWithTrend.data
-                    : [],
-                }}
-              />
-            )
+            <div className="text-center py-10 text-slate-500">
+              Loading dummy data...
+            </div>
           )}
         </div>
       </div>
