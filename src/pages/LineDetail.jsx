@@ -68,7 +68,7 @@ export default function LineDetail() {
             <div className="relative z-10 p-6 max-w-7xl mx-auto">
                 <Button
                     variant='primary'
-                    className="absolute top-4 right-4 z-50 rounded-xl"
+                    className="absolute bg-red-500! top-4 right-4 z-50 rounded-xl"
                     onClick={() => navigate(-1)}
                 >
                     Back
@@ -116,34 +116,6 @@ export default function LineDetail() {
                     <StatusLegend />
                 </div>
             </div>
-
-            {/* MODAL POPUP */}
-            {selectedMachine && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
-                    <div className="bg-[#111827] border border-slate-700 rounded-2xl p-8 max-w-sm w-full shadow-2xl">
-                        <h2 className="text-2xl font-black text-center text-cyan-400 mb-6 uppercase italic tracking-tight">
-                            {selectedMachine.machineName}
-                        </h2>
-                        <div className="space-y-3">
-                            {['Screen Delivery', 'Machine Detail', 'Shift Summary Page'].map((opt) => (
-                                <button
-                                    key={opt}
-                                    onClick={() => handleOptionClick(opt)}
-                                    className="w-full py-4 px-6 border border-slate-700 hover:border-cyan-500 hover:bg-cyan-500/10 text-white font-bold rounded-xl transition-all text-sm uppercase"
-                                >
-                                    {opt}
-                                </button>
-                            ))}
-                            <button
-                                onClick={() => setSelectedMachine(null)}
-                                className="w-full py-3 mt-4 text-slate-500 hover:text-white transition-colors uppercase text-[10px] font-bold tracking-[0.2em]"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

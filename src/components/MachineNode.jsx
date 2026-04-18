@@ -12,7 +12,7 @@ const MachineNode = ({ machine, position, onClick }) => {
   // Menentukan warna dan animasi berdasarkan 3 status
   const getStatusStyles = () => {
     if (isWarning) {
-      return 'bg-yellow-500/90 border-yellow-300 shadow-yellow-500/40 animate-pulse';
+      return 'bg-yellow-400 border-yellow-200 shadow-[0_0_20px_rgba(250,204,21,0.9)] animate-bounce';
     }
     if (isRunning) {
       return 'bg-green-600/90 border-green-400 shadow-green-500/20';

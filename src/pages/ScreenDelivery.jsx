@@ -12,9 +12,9 @@ const MachineStatsTable = ({ machine }) => {
 
   const stats = [
     { label: "PR", val: `${machine.performanceRate || 0}%` },
+    { label: "PDT", val: machine.pdtCount || 0 },
     { label: "UPST", val: machine.upstCount || 0 }, // Ambil data upstCount
     { label: "UPDT", val: `${updtMinutes}m` },     // Ambil data currentUpdtDurationMs
-    { label: "CNT", val: machine.lastBottleCount?.toLocaleString() || 0 },
   ];
 
   return (
@@ -78,10 +78,10 @@ export default function ScreenDelivery() {
       {/* Back Button */}
       <Button 
         variant="primary" 
-        className="absolute top-6 right-6 z-50 rounded-lg scale-90" 
+        className="absolute bg-red-500! top-6 right-6 z-50 rounded-lg scale-90" 
         onClick={() => navigate(-1)}
       >
-        BACK TO DASHBOARD
+        Back
       </Button>
 
       {/* Topology Map Canvas */}
@@ -117,19 +117,6 @@ export default function ScreenDelivery() {
         <div className="absolute top-[52%] left-[30%] text-[10px] font-black text-slate-500 border-b border-cyan-900 tracking-widest uppercase">CIL BOARD</div>
         <div className="absolute top-[54%] left-[20%] text-[10px] font-black text-slate-500 border-b border-cyan-900 tracking-widest uppercase">PDCA BOARD</div>
       </div>
-
-      {/* Modal Re-use logic if needed */}
-      {selectedMachine && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4">
-           <div className="bg-[#111827] border border-slate-700 p-8 rounded-2xl w-full max-w-sm shadow-2xl">
-              <h3 className="text-2xl font-black text-center mb-6 text-cyan-400 italic uppercase">{selectedMachine.machineName}</h3>
-              <div className="flex flex-col gap-3">
-                <button onClick={() => navigate(`/machine-detail/${selectedMachine.machineId}`)} className="w-full py-4 bg-slate-800 hover:bg-cyan-600 transition-all rounded-xl font-bold uppercase text-sm">View Analytics</button>
-                <button onClick={() => setSelectedMachine(null)} className="w-full py-2 mt-4 text-slate-500 font-bold uppercase text-xs tracking-widest">Close</button>
-              </div>
-           </div>
-        </div>
-      )}
     </div>
   );
 }
