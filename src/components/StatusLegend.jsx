@@ -12,7 +12,7 @@ const StatusLegend = () => {
   return (
     <div className="flex gap-6 text-xs font-black uppercase tracking-wider">
       {/* WARNING */}
-      <div className="flex items-center gap-2 text-yellow-400 animate-pulse">
+      <div className="flex items-center gap-2 text-yellow-400">
         <div className="bg-yellow-400 px-3 rounded-full flex items-center justify-center h-8">
           <span className="text-2xl text-white font-bold">!</span>
         </div>

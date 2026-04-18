@@ -1,59 +1,46 @@
-export default function ShiftTable({ shift }) {
-  return (
-    <div className="bg-[#111827]/70 backdrop-blur-sm border border-slate-700/50 rounded-xl p-5 shadow-lg mb-6 overflow-x-auto">
-      <div className="flex items-center justify-between mb-4 min-w-[800px]">
-        <h2 className="text-xl font-bold text-yellow-400">{shift.name}</h2>
-        <span className="text-sm text-slate-300 italic">{shift.timeRange} ({shift.duration} MENIT)</span>
-      </div>
+import { SummaryRow } from "./SummaryRow";
 
-      <table className="w-full text-sm text-left border-collapse min-w-[800px]">
+export default function ShiftTable({ config, data }) {
+  const s = data || {};
+  const hours = s.hours || [];
+  const totals = s.shiftTotals || {};
+
+  return (
+    <div className="border border-slate-700 bg-black/40 overflow-hidden shadow-xl rounded-lg">
+      <table className="w-full text-[11px] border-collapse">
         <thead>
-          <tr className="bg-gradient-to-r from-yellow-900/50 to-amber-900/50 text-[10px] tracking-widest">
-            <th className="p-3">PERFORMA MC</th>
-            {Array.from({ length: 8 }, (_, i) => (
-              <th key={i} className="p-3 text-center">KE-{i + 1}</th>
+          <tr className="h-12">
+            <th className={`${config.headerBg} w-24 text-lg font-black italic`}>
+              {config.name}
+            </th>
+            {hours.map((h, i) => (
+              <th key={i} className="border-r border-slate-700 bg-slate-800/50 text-[9px] px-1">
+                JAM KE-{h.jamKe}
+              </th>
             ))}
-            <th className="p-3 text-center uppercase">Result<br />Shiftly<br />(Min)</th>
-            <th className="p-3 text-center uppercase">Result<br />Shiftly<br />(%)</th>
+            <th className="bg-slate-800/80 w-24 text-[9px]">RESULT SHIFTLY (MIN)</th>
+            <th className="bg-slate-800/80 w-24 text-[9px]">RESULT SHIFTLY (%)</th>
           </tr>
         </thead>
-        <tbody className="font-medium">
-          {/* PR Row */}
-          <tr className="border-t border-slate-700/50 hover:bg-slate-800/30">
-            <td className="p-3 text-cyan-400">PR</td>
-            {shift.prValues.map((val, i) => (
-              <td key={i} className="p-3 text-center">{val}</td>
+
+        <tbody>
+          <tr className="h-8">
+            <td className="text-center text-slate-500 italic">
+              {s.totalShiftMinutes || 480}
+            </td>
+            {hours.map((h, i) => (
+              <td key={i} className="text-center text-[9px] whitespace-pre-line">
+                {h.timeRange?.replace("-", "\n")}
+              </td>
             ))}
-            <td className="p-3 text-center bg-slate-800/20">-</td>
-            <td className="p-3 text-center font-bold text-green-400">{shift.prPercent}</td>
+            <td />
+            <td />
           </tr>
 
-          {/* PDT Row */}
-          <tr className="border-t border-slate-700/50 hover:bg-slate-800/30">
-            <td className="p-3 text-cyan-400">PDT (MIN)</td>
-            {shift.pdtMin.map((val, i) => (
-              <td key={i} className="p-3 text-center">{val || '-'}</td>
-            ))}
-            <td className="p-3 text-center bg-slate-800/20">-</td>
-            <td className="p-3 text-center font-bold text-green-400">{shift.pdtPercent}</td>
-          </tr>
-
-          {/* UPDT Row */}
-          <tr className="border-t border-slate-700/50 hover:bg-slate-800/30">
-            <td className="p-3 text-cyan-400">UPDT (MIN)</td>
-            {shift.updtMin.map((val, i) => (
-              <td key={i} className="p-3 text-center">{val}</td>
-            ))}
-            <td className="p-3 text-center font-bold text-cyan-400">{shift.updtTotal}</td>
-            <td className="p-3 text-center font-bold text-cyan-400">{shift.updtPercent}</td>
-          </tr>
-
-          {/* FREQ Row */}
-          <tr className="border-t border-slate-700/50">
-            <td className="p-3 text-cyan-400">UPDT (FREQ)</td>
-            <td colSpan={8} className="p-3 text-center italic text-slate-400 tracking-widest">{shift.updtFreq}</td>
-            <td colSpan={2} className="p-3"></td>
-          </tr>
+          <SummaryRow label="PR" values={hours.map(h => `${h.pr || 0}%`)} percent={totals.pr} />
+          <SummaryRow label="PDT ( MIN )" values={hours.map(h => h.pdtMin)} result={totals.totalPdtMin} percent={totals.pdtPercent} />
+          <SummaryRow label="UPDT ( MIN )" values={hours.map(h => h.updtMin)} result={totals.totalUpdtMin} percent={totals.updtPercent} />
+          <SummaryRow label="UPST ( FREQ )" values={hours.map(h => h.upstFreq)} result={totals.totalUpstFreq} />
         </tbody>
       </table>
     </div>
