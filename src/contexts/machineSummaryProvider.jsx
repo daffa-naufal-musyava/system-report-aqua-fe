@@ -44,7 +44,7 @@ export const MachineSummaryProvider = ({ children }) => {
   // Efek untuk auto-refresh data dashboard setiap 5 detik (Opsional)
   useEffect(() => {
     fetchDashboardSummary();
-    const interval = setInterval(fetchDashboardSummary, 5000);
+    const interval = setInterval(fetchDashboardSummary, 500);
     return () => clearInterval(interval);
   }, [fetchDashboardSummary]);
 

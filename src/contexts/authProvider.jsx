@@ -17,22 +17,24 @@ export const AuthProvider = ({ children }) => {
     const login = async (username, password) => {
         try {
             const data = await loginUser(username, password);
-            const token = data.access_token; 
-            
+            const token = data.access_token;
+
             localStorage.setItem('token', token);
             setUser({ token });
             return { success: true };
         } catch (error) {
-            return { 
-                success: false, 
-                message: error.response?.data?.message || 'Username/Password salah atau server error.' 
+            return {
+                success: false,
+                message: error.response?.data?.message || 'Username/Password salah atau server error.'
             };
         }
     };
 
     const logout = () => {
         localStorage.removeItem('token');
-        setUser(null);
+        confirm("Apakah Anda yakin ingin logout?", () => {
+            setUser(null);
+        });
     };
 
     return (

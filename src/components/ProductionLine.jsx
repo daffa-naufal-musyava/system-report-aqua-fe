@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { AreaChart, Area, ResponsiveContainer } from "recharts";
 
 export default function ProductionLine({ line }) {
+  console.log("Rendering ProductionLine for:", line);
   return (
     <div className="bg-[#111827]/80 backdrop-blur-sm border border-slate-700/50 rounded-xl p-4 flex flex-col md:flex-row items-center gap-6 md:gap-10 hover:border-slate-500/70 transition-all group">
       <div className="flex items-center gap-4 w-full md:w-44 shrink-0">
