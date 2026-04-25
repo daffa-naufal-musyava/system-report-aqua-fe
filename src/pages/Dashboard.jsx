@@ -45,75 +45,50 @@ function Dashboard() {
     });
   }, []);
 
-  useEffect(() => {
-    const initDashboard = async () => {
-      try {
-        const kpiRes = await getKPI();
-        const kpiData = kpiRes?.data ?? kpiRes;
-        if (kpiData) {
-          setDashboardSummary({
-            totalMachines: kpiData.total ?? 0,
-            runningMachines: kpiData.running ?? 0,
-            stoppedMachines: kpiData.stopped ?? 0,
-            notifications: Array.isArray(kpiData.notifications) ? kpiData.notifications : [],
-          });
-        }
+    intervalRef.current = setInterval(() => {
+      // Geser data, tambah data baru di akhir
+      dummyData = [
+        ...dummyData.slice(1),
+        {
+          value: getRandomInt(60, 100),
+          time: `${parseInt(dummyData[dummyData.length - 1].time) + 1}:00`,
+        },
+      ];
 
-        // Load Initial Chart Data
-        const chartRes = await getChartLine();
-        if (chartRes?.success) {
-          processAndSetChart(chartRes.data);
+      if (!running) {
+        stopCounter++;
+        if (stopCounter >= 4) {
+          running = true;
+          stopCounter = 0;
+        }
+      } else {
+        if (Math.random() > 0.8) {
+          running = false;
+          stopCounter = 0;
         }
       } catch (error) {
         console.error("Initial load failed:", error);
       }
-    };
-
-    initDashboard();
-  }, [processAndSetChart]);
-
-  useEffect(() => {
-    console.log("Socket Status:", socket.connected ? "Connected" : "Disconnected");
-
-    const handleKPIUpdate = (payload) => {
-      console.log("📈 KPI Update Payload:", payload); // DEBUG
-      const rawData = payload?.data ?? payload;
-      setDashboardSummary((prev) => ({
-        ...prev,
-        totalMachines: rawData.total ?? prev.totalMachines,
-        runningMachines: rawData.running ?? prev.runningMachines,
-        stoppedMachines: rawData.stopped ?? prev.stoppedMachines,
-        notifications: Array.isArray(rawData.notifications) ? rawData.notifications : prev.notifications,
-      }));
-    };
-
-    const handleLineUpdate = (payload) => {
-      console.group("📊 CHART UPDATE DETECTED");
-      console.log("Raw Payload:", payload);
-
-      if (payload?.success && payload?.data) {
-        console.log("Chart Data Array:", payload.data.chartData);
-        console.log("Last Value:", payload.data.chartData?.[payload.data.chartData.length - 1]);
-        processAndSetChart(payload.data);
-      } else {
-        console.warn("Payload structure mismatch or success is false!");
-      }
-      console.groupEnd();
-    };
-
-    socket.on("dashboard_update", handleKPIUpdate);
-    socket.on("line_status_update", handleLineUpdate);
-
-    socket.on("connect", () => console.log("✅ Socket Connected!"));
-    socket.on("connect_error", (err) => console.error("❌ Socket Connection Error:", err));
-
-    return () => {
-      socket.off("dashboard_update", handleKPIUpdate);
-      socket.off("line_status_update", handleLineUpdate);
-      socket.off("connect");
-      socket.off("connect_error");
-    };
-  }, [processAndSetChart]);
+      const total = 10;
+      stopped = running ? 0 : 7;
+      const runningCount = running ? total : total - stopped;
+      setLineWithTrend({
+        id: 1,
+        name: "Line 1",
+        status: running ? "RUNNING" : "STOP",
+        hexColor: running ? "#22d3ee" : "#f43f5e",
+        data: dummyData,
+      });
+      setDashboardSummary({
+        lineStatus: {
+          total,
+          running: runningCount,
+          stopped,
+        },
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white p-4 md:p-8 font-sans">
@@ -137,9 +112,7 @@ function Dashboard() {
             colorClass="text-rose-400"
             isNegative
           />
-
-          {/* NOTIFICATION DROPDOWN */}
-          <div className="relative">
+          <div className="relative h-1/2">
             <button
               onClick={() => setShowNotifications(!showNotifications)}
               className="w-full bg-[#111827] border border-slate-700/50 rounded-xl px-5 py-4 flex items-center justify-between hover:bg-[#1a2332] transition-all"
@@ -158,19 +131,12 @@ function Dashboard() {
             </button>
 
             {showNotifications && (
-              <div className="absolute w-full mt-2 bg-[#1e293b] border border-slate-700/50 rounded-xl shadow-2xl z-50 overflow-hidden">
-                <div className="px-4 py-2 text-[10px] font-bold text-slate-500 bg-[#16202e] border-b border-slate-700/50">RECENT LOGS</div>
-                <div className="max-h-60 overflow-y-auto">
-                  {dashboardSummary.notifications.length > 0 ? (
-                    dashboardSummary.notifications.map((notif, idx) => (
-                      <div key={idx} className="px-4 py-3 text-sm text-slate-300 border-b border-slate-700/20 hover:bg-[#263349]">
-                        <span className="text-rose-400 block text-[10px] uppercase font-bold">Alert</span>
-                        {typeof notif === 'string' ? notif : (notif.message || "System Alert")}
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-6 text-center text-slate-500 text-sm italic">No logs found</div>
-                  )}
+              <div className="absolute top-full right-0 mt-2 w-64 bg-[#1e293b] border border-slate-700/50 rounded-xl shadow-2xl z-50">
+                <div className="px-4 py-2 text-xs text-slate-400 border-b border-slate-700">
+                  Recent Alerts
+                </div>
+                <div className="px-4 py-3 text-sm text-slate-300">
+                  Line 1: Motor temperature high (85°C)
                 </div>
               </div>
             )}
