@@ -6,6 +6,7 @@ import mesintopologi from '../assets/login/mesintopologi.png';
 import Button from '../components/Button';
 import MachineNode from '../components/MachineNode';
 import { StatusLegend } from '../components/StatusLegend';
+import { useAuth } from '../contexts/authContext';
 
 // Icons tetap sama
 const RunIcon = () => (
@@ -42,20 +43,19 @@ export default function LineDetail() {
     };
 
 
-
-    const handleOptionClick = (option) => {
-        const routes = {
-            'Shift Summary Page': `/shift-summary/${selectedMachine.machineId}`,
-            'Screen Delivery': `/screen-delivery/${selectedMachine.machineId}`,
-            'default': `/machine-detail/${selectedMachine.machineId}`
-        };
-        navigate(routes[option] || routes['default']);
-        setSelectedMachine(null);
-    };
+    // const handleOptionClick = (option) => {
+    //     const routes = {
+    //         'Shift Summary Page': `/shift-summary/${selectedMachine.machineId}`,
+    //         'Screen Delivery': `/screen-delivery/${selectedMachine.machineId}`,
+    //         'default': `/machine-detail/${selectedMachine.machineId}`
+    //     };
+    //     navigate(routes[option] || routes['default']);
+    //     setSelectedMachine(null);
+    // };
 
     if(loading && machines.length === 0) {
         return (
-            <div className="min-h-screen bg-[#0a0f1c] flex items-center justify-center text-white italic">
+            <div className="min-h-screen bg-[#0a0f1c] flex items-center justify-center text-white">
                 Syncing Real-time Topology...
             </div>
         )

@@ -7,6 +7,7 @@ import ScreenDelivery from '../pages/ScreenDelivery';
 import ShiftSummary from '../pages/ShiftSummary';
 import MachineDetail from '../pages/MachineDetail';
 import MachineDetail1 from '../pages/MachineDetail1';
+import Home from '../pages/Home';
 
 const ProtectedRoute = () => {
     const { user, loading } = useAuth();
@@ -17,21 +18,25 @@ const ProtectedRoute = () => {
 const PublicRoute = () => {
     const { user, loading } = useAuth();
     if (loading) return null;
-    return !user ? <Outlet /> : <Navigate to="/dashboard" replace />;
+    return !user ? <Outlet /> : <Navigate to="/" replace />;
 
 };
 
 export const router = createBrowserRouter([
     {
         element: <PublicRoute />,
-        children: [{ path: '/login', element: <Login /> }]
+        children: [
+            { path: '/', element: <Home /> },
+            { path: '/login', element: <Login /> },
+            { path: '/screen-delivery/:machineId', element: <ScreenDelivery /> },
+            { path: '*', element: <Home /> },
+        ]
     },
     {
         element: <ProtectedRoute />,
         children: [
             { path: '/dashboard', element: <Dashboard /> },
             { path: '/line/:lineId', element: <LineDetail /> },
-            { path: '/screen-delivery/:machineId', element: <ScreenDelivery /> },
             { path: '/shift-summary/:machineId', element: <ShiftSummary /> },
             { path: '/line-detail', element: <MachineDetail1 /> },
             { path: '/machine-detail/:machineId', element: <MachineDetail /> },

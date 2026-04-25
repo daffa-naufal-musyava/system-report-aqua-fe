@@ -1,47 +1,17 @@
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useMachineSummary } from '../contexts/machineSummaryProvider';
+import { useAuth } from '../contexts/authContext';
 import mesintopologi from '../assets/login/mesintopologi.png';
 import Button from '../components/Button';
-import MachineNode from '../components/MachineNode'; // Re-use komponen lingkaran
-
-// Komponen Tabel Kecil (Stats)
-const MachineStatsTable = ({ machine }) => {
-  // Format durasi UPDT dari ms ke menit/detik agar lebih manusiawi
-  const updtMinutes = (machine.currentUpdtDurationMs / 60000).toFixed(1);
-
-  const stats = [
-    { label: "PR", val: `${machine.performanceRate || 0}%` },
-    { label: "PDT", val: machine.pdtCount || 0 },
-    { label: "UPST", val: machine.upstCount || 0 }, // Ambil data upstCount
-    { label: "UPDT", val: `${updtMinutes}m` },     // Ambil data currentUpdtDurationMs
-  ];
-
-  return (
-    <Link 
-      to={`/shift-summary/${machine.machineId}`} 
-      className="flex flex-col cursor-pointer bg-black/80 backdrop-blur-md border border-slate-700 rounded-md overflow-hidden text-[9px] w-24 shadow-2xl hover:border-cyan-500 transition-colors"
-    >
-      <div className="bg-slate-800 py-1 px-1 text-center font-bold border-b border-slate-700 text-cyan-400 uppercase tracking-tighter">
-        {machine.machineName}
-      </div>    
-      {stats.map((stat) => (
-        <div key={stat.label} className="flex border-b border-slate-700 last:border-0">
-          <div className="w-1/2 bg-slate-900/50 px-1.5 py-0.5 border-r border-slate-700 font-bold text-slate-400">{stat.label}</div>
-          <div className="w-1/2 px-1.5 py-0.5 text-right font-mono text-white">{stat.val}</div>
-        </div>
-      ))}
-    </Link>
-  );
-};
+import CardTable from '../components/CardTable'; // Import komponen baru
 
 export default function ScreenDelivery() {
   const { lineId } = useParams();
   const navigate = useNavigate();
   const { machines, loading, lineStatus } = useMachineSummary();
-  const [selectedMachine, setSelectedMachine] = useState(null);
+  const { user } = useAuth();
 
-  // Mapping koordinat yang SAMA dengan LineDetail
   const machinePositions = {
     'AQ-PLT-01': { use: true, top: '18%', left: '10%', tableOffset: { top: '-70px', left: '-20px' } },
     'AQ-WRP-01': { use: true, top: '18%', left: '47%', tableOffset: { top: '-75px', left: '0px' } },
@@ -59,7 +29,6 @@ export default function ScreenDelivery() {
 
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white relative font-sans p-4 overflow-hidden">
-      {/* Background Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 pointer-events-none" />
 
       {/* Header Info */}
@@ -75,7 +44,6 @@ export default function ScreenDelivery() {
         </div>
       </div>
 
-      {/* Back Button */}
       <Button 
         variant="primary" 
         className="absolute bg-red-500! top-6 right-6 z-50 rounded-lg scale-90" 
@@ -84,12 +52,12 @@ export default function ScreenDelivery() {
         Back
       </Button>
 
-      {/* Topology Map Canvas */}
+      {/* Topology Map */}
       <div className="relative w-full h-[85vh] max-w-7xl mx-auto mt-4">
         <img 
             src={mesintopologi} 
             alt="Layout" 
-            className="w-full h-full object-contain opacity-50 transition-opacity duration-1000"
+            className="w-full h-full object-contain opacity-50"
         />
 
         {machines.map((m) => {
@@ -97,22 +65,20 @@ export default function ScreenDelivery() {
           if (!config || !config.use) return null;
 
           return (
-            <div key={m.machineId}>
-              {/* Stats Table Floating */}
-              <div 
-                className="absolute z-40 transition-all duration-500"
-                style={{ 
-                    top: `calc(${config.top} + ${config.tableOffset.top})`, 
-                    left: `calc(${config.left} + ${config.tableOffset.left})` 
-                }}
-              >
-                <MachineStatsTable machine={m} />
-              </div>
+            <div 
+              key={m.machineId}
+              className="absolute z-40 transition-all duration-500"
+              style={{ 
+                  top: `calc(${config.top} + ${config.tableOffset.top})`, 
+                  left: `calc(${config.left} + ${config.tableOffset.left})` 
+              }}
+            >
+              <CardTable machine={m} user={user} />
             </div>
           );
         })}
 
-        {/* Static Labels */}
+        {/* Labels Statis */}
         <div className="absolute top-[34%] left-[24%] text-[10px] font-black text-slate-500 border-b border-cyan-900 tracking-widest uppercase">DDS BOARD</div>
         <div className="absolute top-[52%] left-[30%] text-[10px] font-black text-slate-500 border-b border-cyan-900 tracking-widest uppercase">CIL BOARD</div>
         <div className="absolute top-[54%] left-[20%] text-[10px] font-black text-slate-500 border-b border-cyan-900 tracking-widest uppercase">PDCA BOARD</div>
