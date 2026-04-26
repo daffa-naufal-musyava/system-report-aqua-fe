@@ -5,7 +5,6 @@ import { SummaryRow } from '../components/SummaryRow';
 import Button from '../components/Button';
 import ImgLoader from '../components/ImgLoader';
 
-// Assets
 import cnyImg from '../assets/shiftSum/CNY.png';
 import cprImg from '../assets/shiftSum/CPR.png';
 import flrImg from '../assets/shiftSum/FLR.png';

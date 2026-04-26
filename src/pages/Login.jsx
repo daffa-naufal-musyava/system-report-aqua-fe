@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/authContext'; 
+import { useAuth } from '../contexts/authContext';
 import bgImage from '../assets/login/bg-login.png';
 import { CiUser, CiLock } from 'react-icons/ci';
 import { FaRegEye, FaRegEyeSlash } from 'react-icons/fa';
@@ -12,7 +12,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
-    
+
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -25,18 +25,21 @@ export default function Login() {
         const result = await login(username, password);
         setLoading(false);
 
-        if (result.success) navigate('/dashboard');
-        else setError(result.message);
+        if (result.success) {
+            navigate('/dashboard')
+        } else { 
+            setError(result.message) 
+        };
     };
 
     return (
         <div className="flex items-center justify-center min-h-screen px-3"
-            style={{ 
-                backgroundImage: `url(${bgImage})`, 
-                backgroundSize: 'cover', 
+            style={{
+                backgroundImage: `url(${bgImage})`,
+                backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundBlendMode: 'overlay', 
-                backgroundColor: 'rgba(10, 15, 28, 0.8)' 
+                backgroundBlendMode: 'overlay',
+                backgroundColor: 'rgba(10, 15, 28, 0.8)'
             }}>
             <div className="w-full max-w-md">
                 <div className="backdrop-blur-md border-white/60 border-2 rounded-4xl p-6 shadow-xl">
@@ -44,7 +47,7 @@ export default function Login() {
                         <h1 className="text-center text-white font-semibold tracking-widest mb-6">LOGIN SYSTEM</h1>
                         <div>
                             <label className="flex items-center gap-2 text-white text-sm mb-2"><CiUser className="text-cyan-300" /> Username</label>
-                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} 
+                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)}
                                 className="w-full p-2 bg-slate-900/60 border border-cyan-900/40 rounded text-white focus:outline-none focus:border-cyan-500" placeholder="Username" />
                         </div>
                         <div>
