@@ -44,6 +44,12 @@ export default function ShiftSummary() {
   const [pdtRecords, setPdtRecords] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // State for Report Modal
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [autoReportMode, setAutoReportMode] = useState(false);
+  const [reportFreq, setReportFreq] = useState('weekly');
+  const [isDownloading, setIsDownloading] = useState(false);
+
   // State PDT Manual (3 Shift x 8 Jam)
   const [manualPdt, setManualPdt] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
@@ -132,13 +138,135 @@ export default function ShiftSummary() {
 
   const getPdtShiftTotal = (shiftIdx) => manualPdt[shiftIdx].reduce((a, b) => a + (parseInt(b) || 0), 0);
 
+  // PENGELOLAAN EXPORT REPORT
+  const handleDownloadReport = async () => {
+    setIsDownloading(true);
+    try {
+      let url = '';
+      let activeFormat = '';
+
+      if (autoReportMode) {
+         // Endpoint untuk Mode Auto Download / Berkala (Download berformat Excel)
+         activeFormat = 'excel';
+         url = `https://66c10dvz-3006.asse.devtunnels.ms/api/reports/download?format=${activeFormat}&machineId=${currentMachine.dbId}&period=${reportFreq}`;
+      } else {
+         // Endpoint untuk Download Manual Sekarang (Download berformat PDF)
+         activeFormat = 'pdf';
+         url = `https://66c10dvz-3006.asse.devtunnels.ms/api/reports/manual-save?format=${activeFormat}&machineId=${currentMachine.dbId}`;
+      }
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errData = await response.text();
+        throw new Error(`Gagal memuat dari API: ${response.statusText} - ${errData}`);
+      }
+      
+      const blob = await response.blob();
+      const urlBlob = window.URL.createObjectURL(new Blob([blob]));
+      const linkTag = document.createElement('a');
+      linkTag.href = urlBlob;
+      
+      // Beri nama file berbeda sesuai mode
+      const fileNameMode = autoReportMode ? `Auto_Mingguan` : `Manual`;
+      linkTag.setAttribute('download', `Laporan_Shift_${fileNameMode}_${currentMachine.name}_${new Date().getTime()}.${activeFormat === 'excel' ? 'xlsx' : 'pdf'}`);
+      
+      document.body.appendChild(linkTag);
+      linkTag.click();
+      linkTag.parentNode.removeChild(linkTag);
+      
+    } catch(err) {
+      console.error(err);
+      alert('Terjadi kesalahan saat memproses laporan: ' + err.message);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (loading && shiftData.length === 0) {
     return <div className="min-h-screen bg-[#05070a] flex items-center justify-center text-cyan-400 italic font-black text-xl animate-pulse">Loading {currentMachine.name}...</div>;
   }
 
   return (
     <div className="min-h-screen bg-[#05070a] text-white p-4 font-sans flex flex-col lg:flex-row gap-6 overflow-x-hidden relative">
-      <Button variant='primary' className="absolute bg-red-600! top-4 right-4 z-50 rounded-xl" onClick={() => navigate(-1)}>Back</Button>
+      <div className="absolute top-4 right-4 z-50 flex gap-3">
+        <Button variant='primary' className="!bg-[#0e7490] hover:!bg-[#164e63] font-bold shadow-[2px_2px_0_#fff] rounded-xl !text-white transition-all uppercase text-xs" onClick={() => setIsReportModalOpen(true)}>
+          Export / Laporan
+        </Button>
+        <Button variant='primary' className="!bg-red-600 shadow-lg shadow-red-900/50 hover:!bg-red-500 rounded-xl" onClick={() => navigate(-1)}>
+          Back
+        </Button>
+      </div>
+
+      {isReportModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md transition-all">
+          <div className="bg-[#0a0f1c] border border-cyan-800/50 p-6 rounded-2xl shadow-2xl shadow-cyan-900/20 w-full max-w-md text-white relative">
+            <div className="flex justify-between items-center mb-6 border-b border-slate-800 pb-4">
+              <h2 className="text-2xl font-black italic text-cyan-400 capitalize drop-shadow-[0_2px_10px_rgba(34,211,238,0.2)]">Export Laporan Shift</h2>
+              <button onClick={() => setIsReportModalOpen(false)} className="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Report Frequency Setting (Works for Export too) */}
+              <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 flex flex-col gap-3 transition-opacity">
+                 <h3 className="text-sm font-bold text-slate-300">Frekuensi Penarikan Laporan</h3>
+                 <div className="flex flex-wrap gap-5 mt-1">
+                   {['daily', 'weekly', 'monthly'].map(freq => (
+                     <label key={freq} className={`flex items-center gap-2 ${freq !== 'weekly' ? 'cursor-not-allowed opacity-40' : 'cursor-pointer group'}`}>
+                       <input 
+                         type="radio" 
+                         value={freq} 
+                         checked={reportFreq === freq} 
+                         onChange={(e) => setReportFreq(e.target.value)} 
+                         disabled={freq !== 'weekly'}
+                         className="accent-cyan-500 w-4 h-4 cursor-pointer" 
+                       />
+                       <span className={`text-sm text-gray-300 capitalize font-medium ${freq === 'weekly' ? 'group-hover:text-white transition-colors' : ''}`}>
+                         {freq === 'daily' ? 'Per Hari' : freq === 'weekly' ? 'Per Minggu' : 'Per Bulan'}
+                       </span>
+                     </label>
+                   ))}
+                 </div>
+                 <p className="text-[10px] text-gray-500 italic mt-1">*Saat ini endpoint hanya support penarikan laporan Per Minggu</p>
+              </div>
+
+              {/* Auto Mode */}
+              <div className="flex items-center justify-between p-4 bg-slate-900/80 rounded-xl border border-slate-800 shadow-inner">
+                <div>
+                  <h3 className="font-bold text-gray-200">Mode Otomatis</h3>
+                  <p className="text-xs text-gray-500 pr-5 mt-1">Jadwalkan laporan terkirim/tergenerate ke sistem/email otomatis.</p>
+                </div>
+                <label className="relative inline-flex flex-shrink-0 items-center cursor-pointer">
+                  <input type="checkbox" className="sr-only peer" checked={autoReportMode} onChange={(e) => setAutoReportMode(e.target.checked)} />
+                  <div className="w-12 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                </label>
+              </div>
+
+
+
+              {/* Info Text */}
+              <div className="p-4 bg-cyan-950/30 rounded-xl border border-cyan-900/50 flex gap-3 items-start">
+                <svg className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path></svg>
+                <p className="text-xs text-cyan-200 leading-relaxed">
+                  <b>Download Berbeda Format:</b><br />
+                  Mode Manual akan mengunduh format <b>PDF</b>.<br />
+                  Mode Otomatis (Per Minggu) akan mengunduh format <b>Excel (.xlsx)</b>.
+                </p>
+              </div>
+              
+              {/* Button Container */}
+              <div className="pt-4 mt-2 flex justify-end gap-4 border-t border-slate-800">
+                <Button variant="ghost" className="px-5 text-gray-400 hover:text-white hover:!bg-slate-800 rounded-lg" onClick={() => setIsReportModalOpen(false)}>
+                  Batal
+                </Button>
+                <Button variant="primary" className="!bg-[#0e7490] hover:!bg-cyan-500 px-6 py-2 rounded-lg font-bold shadow-[2px_2px_0_#fff] !text-white uppercase text-xs disabled:opacity-50" onClick={handleDownloadReport} disabled={isDownloading}>
+                  {isDownloading ? 'Mengunduh...' : 'Download Sekarang'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* LEFT: Hourly Tables */}
       <div className="flex-1 space-y-8 max-w-[1000px]">
