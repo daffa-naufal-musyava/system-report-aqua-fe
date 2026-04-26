@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/authContext';
+
 import Login from '../pages/Login';
 import Dashboard from '../pages/Dashboard';
 import LineDetail from '../pages/LineDetail';
@@ -11,15 +12,24 @@ import Home from '../pages/Home';
 
 const ProtectedRoute = () => {
     const { user, loading } = useAuth();
-    if (loading) return <div className="h-screen bg-[#0a0f1c] flex items-center justify-center text-white">Loading...</div>;
+
+    if (loading) {
+        return (
+            <div className="h-screen flex items-center justify-center text-white bg-[#0a0f1c]">
+                Loading...
+            </div>
+        );
+    }
+
     return user ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 const PublicRoute = () => {
     const { user, loading } = useAuth();
-    if (loading) return null;
-    return !user ? <Outlet /> : <Navigate to="/" replace />;
 
+    if (loading) return null;
+
+    return !user ? <Outlet /> : <Navigate to="/dashboard" replace />;
 };
 
 export const router = createBrowserRouter([
@@ -28,8 +38,6 @@ export const router = createBrowserRouter([
         children: [
             { path: '/', element: <Home /> },
             { path: '/login', element: <Login /> },
-            { path: '/screen-delivery/:machineId', element: <ScreenDelivery /> },
-            { path: '*', element: <Home /> },
         ]
     },
     {
@@ -42,4 +50,12 @@ export const router = createBrowserRouter([
             { path: '/machine-detail/:machineId', element: <MachineDetail /> },
         ]
     },
+    {
+        path: '*',
+        element: <Navigate to="/" replace />
+    }, 
+    {
+        path: '/screen-delivery/:machineId', 
+        element: <ScreenDelivery />
+    }
 ]);

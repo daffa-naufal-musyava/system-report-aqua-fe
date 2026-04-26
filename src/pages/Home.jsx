@@ -3,7 +3,6 @@ import ImgLoc from '../assets/home/maps-location.png'
 
 export default function Home() {
     const { lineId } = useParams();
-
     return (
         <div className="h-screen relative bg-[#0a0f1c] flex items-center justify-center text-white">
             <img src={ImgLoc} alt="Location" className="max-h-screen" />
