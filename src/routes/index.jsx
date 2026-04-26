@@ -26,10 +26,10 @@ export const router = createBrowserRouter([
     {
         element: <PublicRoute />,
         children: [
+            { path: '*', element: <Home /> },
             { path: '/', element: <Home /> },
             { path: '/login', element: <Login /> },
             { path: '/screen-delivery/:machineId', element: <ScreenDelivery /> },
-            { path: '*', element: <Home /> },
         ]
     },
     {
