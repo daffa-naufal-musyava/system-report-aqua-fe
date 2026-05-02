@@ -154,8 +154,8 @@ export default function ShiftSummary() {
          activeFormat = 'pdf';
          url = `https://66c10dvz-3006.asse.devtunnels.ms/api/reports/manual-save?format=${activeFormat}&machineId=${currentMachine.dbId}`;
       }
-      
-      const response = await fetch(url);
+            
+      const response = await fetch(url);      
       
       if (!response.ok) {
         const errData = await response.text();
