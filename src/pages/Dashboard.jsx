@@ -3,8 +3,11 @@ import DashboardCard from "../components/DashboardCard";
 import ProductionLine from "../components/ProductionLine";
 import { socket } from "../api/socket";
 import { getKPI } from "../api/kpiApi";
+import { useAuth } from "../contexts/authContext";
 
 function Dashboard() {
+  const { user, logout } = useAuth();
+
   // 1. Initial State yang Konsisten
   const [dashboardSummary, setDashboardSummary] = useState({
     totalMachines: 0,
@@ -97,6 +100,28 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-[#0a0f1c] text-white p-4 md:p-8 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
+
+        {/* HEADER SECTION */}
+        <div className="flex justify-between items-center bg-[#111827] p-4 rounded-2xl border border-slate-700/50">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center font-bold text-lg shadow-lg">
+              {user?.username?.charAt(0).toUpperCase() || 'A'}
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-slate-200 leading-tight">System Dashboard</h1>
+              <p className="text-xs text-slate-400">Welcome back, <span className="text-cyan-400 capitalize">{user?.username || 'User'}</span> (<span className="uppercase">{user?.role || 'Guest'}</span>)</p>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            className="px-4 py-2 bg-rose-500/10 text-rose-400 border border-rose-500/30 rounded-lg hover:bg-rose-500/20 hover:border-rose-500/50 transition-all font-bold text-sm flex items-center gap-2 shadow-[0_0_15px_rgba(244,63,94,0.1)]"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span className="hidden sm:inline">Logout</span>
+          </button>
+        </div>
 
         {/* KPI SECTION */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
