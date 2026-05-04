@@ -1,190 +1,121 @@
-import { useState } from 'react';
+import { useState, useMemo, use } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import lineMachine from '../assets/group-52.png';
+// import { useMachineSummary } from '../contexts/machineSummaryContext';
+import { useMachineSummary } from '../contexts/machineSummaryProvider'
+import mesintopologi from '../assets/login/mesintopologi.png';
+import Button from '../components/Button';
+import MachineNode from '../components/MachineNode';
+import { StatusLegend } from '../components/StatusLegend';
+import { useAuth } from '../contexts/authContext';
 
-// --- ICONS COMPONENTS ---
+// Icons tetap sama
 const RunIcon = () => (
     <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
         <path d="M13.49 5.48c0 1.1-.89 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 5.3 1.2z" />
     </svg>
 );
+const StopIcon = () => <div className="w-3.5 h-3.5 bg-white rounded-sm shadow-[0_0_8px_white]" />;
 
-const StopIcon = () => (
-    <div className="w-3.5 h-3.5 bg-white rounded-sm shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-);
-
-// --- MAIN COMPONENT ---
 export default function LineDetail() {
     const { lineId } = useParams();
     const navigate = useNavigate();
+    const { machines, loading, lineStatus } = useMachineSummary();
     const [selectedMachine, setSelectedMachine] = useState(null);
 
-    const lineInfo = {
-        number: lineId || '1',
-        volume: '600 mL',
-        overallStatus: 'WARNING',
+    // Map machineId dari API ke posisi UI kamu
+    const machinePositions = {
+        'AQ-PLT-01': { top: '18%', left: '10%', width: '12%', height: '18%', name: 'Palletizer Robot', use: true },
+        'AQ-WRP-01': { top: '18%', left: '47%', width: '12%', height: '7%', name: 'Wrapper 1', use: true },
+        'AQ-WRP-02': { top: '20%', left: '35%', width: '12%', height: '7%', name: 'Wrapper 2', use: true },
+        'AQ-CAP-01': { top: '80%', left: '78%', width: '10%', height: '12%', name: 'Capper Rotary', use: true },
+        'AQ-BLW-01': { top: '43%', left: '73%', width: '12%', height: '0%', name: 'Blower Alpha', use: true },
+        'AQ-FIL-01': { top: '90%', left: '71.4%', width: '12%', height: '0%', name: 'Filler High-Speed', use: true },
+        'AQ-LBL-01': { top: '78%', left: '33.5%', width: '12%', height: '12%', name: 'Labeler Front', use: true },
+        'AQ-CON-01': { top: '60%', left: '54%', width: '12%', height: '0%', name: 'Panel Conveyor', use: true },
+        'AQ-CAP-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Capper Linear', use: false },
+        'AQ-BLW-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Blower Beta', use: false },
+        'AQ-FIL-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Filler Medium', use: false },
+        'AQ-LBL-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Labeler Back', use: false },
+        'AQ-INK-01': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Inkjet Coder 1', use: false },
+        'AQ-INK-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Inkjet Coder 2', use: false },
+        'AQ-PCK-01': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Case Packer A', use: false },
+        'AQ-PCK-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Case Packer B', use: false },
     };
 
-    const machines = [
-        { id: 'paletizer', name: 'PALETIZER', status: 'RUN', color: 'green', position: { top: '15%', left: '5%', width: '12%', height: '18%' } },
-        { id: 'dds-board', name: 'DDS BOARD', status: 'WARNING', color: 'yellow', position: { top: '25%', left: '18%', width: '10%', height: '8%' } },
-        { id: 'weight-checker', name: 'WEIGHT CHECKER', status: 'RUN', color: 'green', position: { top: '22%', left: '32%', width: '9%', height: '6%' } },
-        { id: 'wraparound-smi', name: 'WRAPAROUND SMI', status: 'STOP', color: 'red', position: { top: '20%', left: '45%', width: '12%', height: '7%' } },
-        { id: 'robot-feeder', name: 'ROBOT FEEDER', status: 'STOP', color: 'red', position: { top: '35%', left: '55%', width: '10%', height: '10%' } },
-        { id: 'cil-board', name: 'CIL BOARD', status: 'RUN', color: 'green', position: { top: '45%', left: '20%', width: '8%', height: '6%' } },
-        { id: 'tools', name: 'TOOLS', status: 'WARNING', color: 'yellow', position: { top: '48%', left: '30%', width: '7%', height: '5%' } },
-        { id: 'pdca-board', name: 'PDCA BOARD', status: 'RUN', color: 'green', position: { top: '55%', left: '15%', width: '9%', height: '6%' } },
-        { id: 'spectrum', name: 'SPECTRUM', status: 'STOP', color: 'red', position: { top: '52%', left: '40%', width: '8%', height: '5%' } },
-        { id: 'capper', name: 'CAPPER', status: 'STOP', color: 'red', position: { top: '65%', left: '70%', width: '10%', height: '12%' } },
-        { id: 'sbo', name: 'SBO', status: 'STOP', color: 'red', position: { top: '40%', right: '5%', width: '15%', height: '25%' } },
-    ];
 
-    const handleOptionClick = (option) => {
-        const routes = {
-            'Shift Summary Page': '/shift-summary/' + selectedMachine.id,
-            'Screen Delivery': '/screen-delivery/' + selectedMachine.id,
-            'default': '/machine-detail/' + selectedMachine.id
-        };
-        navigate(routes[option] || routes['default']);
-        setSelectedMachine(null);
+    // const handleOptionClick = (option) => {
+    //     const routes = {
+    //         'Shift Summary Page': `/shift-summary/${selectedMachine.machineId}`,
+    //         'Screen Delivery': `/screen-delivery/${selectedMachine.machineId}`,
+    //         'default': `/machine-detail/${selectedMachine.machineId}`
+    //     };
+    //     navigate(routes[option] || routes['default']);
+    //     setSelectedMachine(null);
+    // };
+
+    if(loading && machines.length === 0) {
+        return (
+            <div className="min-h-screen bg-[#0a0f1c] flex items-center justify-center text-white">
+                Syncing Real-time Topology...
+            </div>
+        )
     };
 
     return (
         <div className="min-h-screen bg-[#0a0f1c] text-white relative overflow-hidden font-sans">
-
-            {/* Background Overlay */}
             <div className="absolute inset-0 bg-black/40 z-0" />
 
-            {/* BACK BUTTON (Sesuai Desain Awal) */}
-            <button
-                onClick={() => navigate(-1)}
-                className="absolute top-6 right-6 z-50 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg shadow-red-900/40 transition-all duration-200"
-            >
-                Back
-            </button>
-
             <div className="relative z-10 p-6 max-w-7xl mx-auto">
+                <Button
+                    variant='primary'
+                    className="absolute bg-red-500! top-4 right-4 z-50 rounded-xl"
+                    onClick={() => navigate(-1)}
+                >
+                    Back
+                </Button>
 
                 {/* TOPOLOGY MAP SECTION */}
                 <div
-                    style={{ backgroundImage: `url(${lineMachine})` }}
-                    className="relative h-[80vh] md:h-[85vh] w-full bg-contain bg-no-repeat bg-center"
+                    style={{ backgroundImage: `url(${mesintopologi})` }}
+                    className="relative h-[80vh] w-full bg-contain bg-no-repeat bg-center transition-all duration-700"
                 >
-                    {machines.map((machine) => (
-                        <div
-                            key={machine.id}
-                            className="absolute cursor-pointer group flex items-center justify-center"
-                            style={{
-                                top: machine.position.top,
-                                left: machine.position.left,
-                                width: machine.position.width,
-                                height: machine.position.height,
-                                right: machine.position.right
-                            }}
-                            onClick={() => setSelectedMachine(machine)}
-                        >
-                            <div className="relative flex items-center justify-center">
-                                {/* Node Circle */}
-                                <div className={`relative w-11 h-11 rounded-full flex items-center justify-center border-2 transition-all duration-300 group-hover:scale-125 shadow-xl shadow-black/50 backdrop-blur-sm
-                  ${machine.status === 'RUN' ? 'bg-green-600/90 border-green-400 shadow-[0_0_15px_rgba(34,197,94,0.4)]' :
-                                        machine.status === 'WARNING' ? 'bg-yellow-600/90 border-yellow-400 animate-pulse shadow-[0_0_20px_rgba(234,179,8,0.6)]' :
-                                            'bg-red-600/90 border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.4)]'}`}
-                                >
-                                    {/* Status Content */}
-                                    {machine.status === 'RUN' && <RunIcon />}
-                                    {machine.status === 'WARNING' && <span className="font-black text-2xl text-white italic drop-shadow-md">!</span>}
-                                    {machine.status === 'STOP' && <StopIcon />}
+                    {machines.map((m) => {
+                        const config = machinePositions[m.machineId];
+                        if (!config || !config.use) return null;
 
-                                    {/* Tooltip - Solid Black (No Blur) */}
-                                    <div className="absolute -top-12 left-1/2 -translate-x-1/2 bg-black border border-slate-700 text-white text-[10px] font-black px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-all pointer-events-none whitespace-nowrap z-50 uppercase tracking-widest shadow-2xl">
-                                        <span className="text-cyan-500 mr-1 opacity-70">UNIT:</span>
-                                        {machine.name}
-                                    </div>
-                                </div>
-
-                                {/* Extra Kedap-Kedip Ping for Warning Only */}
-                                {machine.status === 'WARNING' && (
-                                    <div className="absolute inset-0 rounded-full bg-yellow-400 animate-ping opacity-20" />
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                        return (
+                            <MachineNode
+                                key={m.machineId}
+                                machine={m}
+                                position={config}
+                                onClick={setSelectedMachine}
+                            />
+                        );
+                    })}
                 </div>
 
-                {/* BOTTOM INFO BAR (Sesuai Desain Awal) */}
-                <div className="mb-8 flex mt-10 flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className='flex gap-5'>
-                        <h1 className="text-3xl font-bold p-5 bg-black text-[#70EC4B] border border-slate-800 shadow-xl italic uppercase tracking-tighter">
-                            LINE {lineInfo.number} {lineInfo.volume}
+                {/* INFO BAR SECTION */}
+                <div className="mb-8 flex mt-10 flex-col md:flex-row justify-between items-start md:items-center gap-6 border-t border-slate-800 pt-8">
+                    <div className='flex items-center gap-5'>
+                        <h1 className="text-3xl font-black p-5 bg-black text-[#70EC4B] border border-slate-800 shadow-2xl italic uppercase tracking-tighter">
+                            LINE {lineId || '1'} | 600ml
                         </h1>
-                        <p className="text-lg mt-1 p-5 font-medium">
-                            STATUS : <span className={`font-black uppercase italic ${lineInfo.overallStatus === 'RUN' ? 'text-green-400' : lineInfo.overallStatus === 'WARNING' ? 'text-yellow-400' : 'text-red-500'}`}>
-                                {lineInfo.overallStatus}
+                        <div className="text-lg font-medium">
+                            STATUS : <span className={`font-black uppercase italic ${lineStatus.stopped === 0 ? 'text-green-400' : 'text-red-500'}`}>
+                                {lineStatus.stopped === 0 ? 'Normal' : 'Issues'}
                             </span>
-                        </p>
+                        </div>
                     </div>
 
-                    <Link to="/line-detail"
-                        className="w-50 px-6 py-1.5 hover:bg-cyan-700/50 border border-cyan-600/50 rounded-lg text-white font-bold text-center transition-all uppercase tracking-widest text-xs"
+                    <Link to={`/screen-delivery/${lineId || '1'}`}
+                        className="px-8 py-3 bg-cyan-900/20 hover:bg-cyan-700/50 border border-cyan-600/50 rounded-lg text-white font-bold text-center transition-all uppercase tracking-widest text-xs shadow-lg shadow-cyan-500/10"
                     >
-                        Line Detail
+                        Screen Delivery
                     </Link>
 
-                    <div className="flex gap-6 text-xs font-black uppercase tracking-wider">
-                        <div className="flex items-center gap-2 text-yellow-400 animate-pulse">
-                            <div className="bg-yellow-400 px-3 rounded-full">
-                                <span className="text-2xl text-white">!</span>
-                            </div>
-                            <div className="w-2.5 h-2.5 bg-yellow-400 rounded-full" />
-                            WARNING
-                        </div>
-                        <div className="flex items-center gap-2 text-red-500">
-                            <div className="bg-red-500 p-2 rounded-full">
-                                <StopIcon />
-                            </div>
-                            <div className="w-2.5 h-2.5 bg-red-500 rounded-full" />
-                            STOP
-                        </div>
-                        <div className="flex items-center gap-2 text-green-400">
-                            <div className="bg-green-400 p-1 rounded-full">
-                                <RunIcon />
-                            </div>
-                            <div className="w-2.5 h-2.5 bg-green-400 rounded-full" />
-                            RUN
-                        </div>
-                    </div>
-
+                    <StatusLegend />
                 </div>
             </div>
-
-            {/* MODAL POPUP */}
-            {selectedMachine && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all">
-                    <div className="bg-[#111827] border border-slate-700 rounded-xl p-8 max-w-lg w-full shadow-2xl shadow-cyan-900/30">
-                        <div className="space-y-4">
-                            <h2 className="text-2xl font-bold text-center text-cyan-400 border-b border-slate-800 pb-4">
-                                {selectedMachine.name}
-                            </h2>
-                            {['Screen Delivery', 'Machine Detail', 'Shift Summary Page'].map((option) => (
-                                <button
-                                    key={option}
-                                    onClick={() => handleOptionClick(option)}
-                                    className="w-full py-4 px-6 text-2xl font-bold hover:bg-cyan-700/50 border border-cyan-600/50 rounded-lg text-white text-center transition-all shadow-md hover:shadow-cyan-500/20"
-                                >
-                                    {option}
-                                </button>
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={() => setSelectedMachine(null)}
-                            className="mt-6 w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 font-bold uppercase transition tracking-widest text-xs"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

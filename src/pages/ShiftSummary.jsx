@@ -1,147 +1,251 @@
-import { useNavigate } from 'react-router-dom';
-import ShiftTable from '../components/ShiftTable';
+import { useState, useEffect, useCallback, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { authContext } from '../contexts/AuthContext';
+import { 
+  getShiftSummary, 
+  getDailySummary, 
+  getPdtList, 
+  createPdt, 
+  unlockPdt 
+} from '../api/shiftSummaryApi';
+import { SummaryRow } from '../components/SummaryRow';
+import Button from '../components/Button';
+import ImgLoader from '../components/ImgLoader';
 
-const shifts = [
-  {
-    name: 'SHIFT 1',
-    timeRange: '06:00 - 14:00',
-    duration: 480,
-    prValues: ['98.33%', '97.92%', '98.96%', '88.54%', '97.92%', '96.98%', '98.96%', '97.92%'],
-    prPercent: '75.42%',
-    pdtMin: ['', '', '', '', '', '45', '', '45'],
-    pdtPercent: '9.38%',
-    updtMin: ['8', '10', '5', '10', '10', '15', '5', '10'],
-    updtTotal: '73',
-    updtPercent: '15.21%',
-    updtFreq: 'JAM',
-  },
-  {
-    name: 'SHIFT 2',
-    timeRange: '14:00 - 22:00',
-    duration: 480,
-    prValues: ['98.33%', '97.92%', '98.96%', '97.92%', '97.92%', '96.86%', '98.96%', '97.92%'],
-    prPercent: '84.79%',
-    pdtMin: ['', '', '', '', '', '', '0', '0'],
-    pdtPercent: '0.00%',
-    updtMin: ['8', '10', '5', '10', '10', '15', '5', '10'],
-    updtTotal: '73',
-    updtPercent: '15.21%',
-    updtFreq: 'JAM',
-  },
-  {
-    name: 'SHIFT 3',
-    timeRange: '22:00 - 06:00',
-    duration: 480,
-    prValues: ['98.33%', '97.92%', '98.96%', '97.92%', '97.92%', '96.86%', '98.96%', '97.92%'],
-    prPercent: '84.79%',
-    pdtMin: ['', '', '', '', '', '', '0', '0'],
-    pdtPercent: '0.00%',
-    updtMin: ['8', '10', '5', '10', '10', '15', '5', '10'],
-    updtTotal: '73',
-    updtPercent: '15.21%',
-    updtFreq: 'JAM',
-  }
-];
+import cnyImg from '../assets/shiftSum/CNY.png';
+import cprImg from '../assets/shiftSum/CPR.png';
+import flrImg from '../assets/shiftSum/FLR.png';
+import lbLImg from '../assets/shiftSum/LBL.png';
+import plzImg from '../assets/shiftSum/PLZ.png';
+import wrpImg from '../assets/shiftSum/WRP.png';
 
-const dailySummary = {
-  pr: ['75.42%', '84.79%', '84.79%', '81.67%'],
-  pdtMin: ['9.38%', '0.00%', '0.00%', '3.13%', '45'],
-  updtMin: ['15.21%', '15.21%', '15.21%', '15.21%', '219'],
+const MACHINE_METADATA = {
+  'AQ-PLT-01': { dbId: 1, name: 'PALLETIZER', shortName: 'PLT', img: plzImg },
+  'AQ-WRP-01': { dbId: 2, name: 'WRAPPING 1', shortName: 'WRP1', img: wrpImg },
+  'AQ-WRP-02': { dbId: 3, name: 'WRAPPING 2', shortName: 'WRP2', img: wrpImg },
+  'AQ-CAP-01': { dbId: 4, name: 'CAPPING', shortName: 'CAP', img: cprImg },
+  'AQ-BLW-01': { dbId: 5, name: 'BLOWER', shortName: 'BLW', img: flrImg },
+  'AQ-FIL-01': { dbId: 6, name: 'FILLER', shortName: 'FIL', img: flrImg },
+  'AQ-LBL-01': { dbId: 7, name: 'LABELLER', shortName: 'LBL', img: lbLImg },
+  'AQ-CON-01': { dbId: 8, name: 'CONVEYOR', shortName: 'CON', img: cnyImg },
 };
 
 export default function ShiftSummary() {
   const navigate = useNavigate();
+  const { machineId } = useParams();
+  const { user } = useContext(authContext); 
+  
+  const currentMachine = MACHINE_METADATA[machineId] || { dbId: 1, name: machineId, shortName: 'MC', img: null };
+  const isPPIC = user?.role === 'PPIC';
+
+  const [shiftData, setShiftData] = useState([]);
+  const [dailyData, setDailyData] = useState(null);
+  const [pdtRecords, setPdtRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [manualPdt, setManualPdt] = useState([
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
+
+  const shiftConfigs = [
+    { name: 'SHIFT 1', headerBg: 'bg-[#a38a00]' },
+    { name: 'SHIFT 2', headerBg: 'bg-[#b59410]' },
+    { name: 'SHIFT 3', headerBg: 'bg-[#1b7a21]' },
+  ];
+
+  const fetchAllData = useCallback(async (isSilent = false) => {
+    try {
+      if (!isSilent) setLoading(true);
+      const [s1, s2, s3, daily, pdtList] = await Promise.all([
+        getShiftSummary(1, machineId),
+        getShiftSummary(2, machineId),
+        getShiftSummary(3, machineId),
+        getDailySummary(machineId),
+        getPdtList()
+      ]);
+      
+      setShiftData([s1.data, s2.data, s3.data]);
+      setDailyData(daily.data);
+      setPdtRecords(pdtList.data.filter(r => r.machineId === currentMachine.dbId));
+      
+    } catch (err) {
+      console.error("Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [machineId, currentMachine.dbId]);
+
+  useEffect(() => {
+    fetchAllData();
+    const pollInterval = setInterval(() => fetchAllData(true), 10000);
+    return () => clearInterval(pollInterval);
+  }, [fetchAllData]);
+
+  const handleUnlockTrigger = async () => {
+    const lockedRec = pdtRecords.find(r => r.isLocked === true);
+    if (!lockedRec) return alert("Data sudah terbuka atau tidak ada data locked.");
+
+    const password = prompt("Masukkan Password Unlock");
+    if (!password) return;
+
+    try {
+      await unlockPdt(lockedRec.id, {
+        machineId: currentMachine.dbId,
+        planDate: lockedRec.planDate,
+        duration: lockedRec.duration,
+        reason: "Manual Unlock by PPIC",
+        password: password
+      });
+      alert("Unlock Berhasil!");
+      fetchAllData();
+    } catch (err) {
+      alert("Gagal Unlock: " + (err.response?.data?.message || "Password Salah"));
+    }
+  };
+  const handlePdtSubmit = async (shiftIdx, hourIdx, value) => {
+    try {
+      await createPdt({
+        machineId: currentMachine.dbId,
+        planDate: new Date().toISOString(),
+        duration: parseInt(value) || 0,
+        reason: `Update Shift ${shiftIdx + 1}`
+      });
+      fetchAllData();
+    } catch (err) {
+      console.error("Gagal Simpan PDT");
+    }
+  };
+
+  const handlePdtChange = (shiftIdx, hourIdx, value) => {
+    const updated = [...manualPdt];
+    updated[shiftIdx][hourIdx] = value;
+    setManualPdt(updated);
+  };
+
+  const getPdtShiftTotal = (shiftIdx) => manualPdt[shiftIdx].reduce((a, b) => a + (parseInt(b) || 0), 0);
+
+  if (loading && shiftData.length === 0) {
+    return <div className="min-h-screen bg-[#05070a] flex items-center justify-center text-cyan-400 italic font-black text-xl animate-pulse">Loading {currentMachine.name}...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1c] text-white pt-20 pb-10 font-sans relative">
-      <button
-        onClick={() => navigate(-1)}
-        className="absolute top-6 right-6 px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg shadow-red-900/40 transition-all z-50"
-      >
-        Back
-      </button>
+    <div className="min-h-screen bg-[#05070a] text-white p-4 font-sans flex flex-col lg:flex-row gap-6 overflow-x-hidden relative">
+      <Button variant='primary' className="absolute bg-red-600! top-4 right-4 z-50 rounded-xl" onClick={() => navigate(-1)}>Back</Button>
 
-      <div className="mx-4 md:mx-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* LEFT: Hourly Tables */}
+      <div className="flex-1 space-y-8 max-w-[1000px]">
+        {shiftConfigs.map((config, idx) => {
+          const s = shiftData[idx] || {};
+          const hours = s.hours || [];
+          const totals = s.shiftTotals || {};
+          const isLocked = pdtRecords.some(r => r.isLocked);
 
-          {/* LEFT COLUMN: SHIFT TABLES */}
-          <div className="lg:col-span-2 space-y-6">
-            {shifts.map((shift, idx) => (
-              <ShiftTable key={idx} shift={shift} />
-            ))}
-          </div>
+          return (
+            <div key={idx} className="border border-slate-700 bg-black/40 overflow-hidden shadow-xl rounded-lg">
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="h-12">
+                    <th className={`${config.headerBg} w-24 text-lg font-black italic`}>{config.name}</th>
+                    {[...Array(8)].map((_, i) => (
+                      <th key={i} className="border-r border-slate-700 bg-slate-800/50 font-normal text-[9px] px-1">
+                        JAM KE-{hours[i]?.jamKe || (i + 1)}
+                      </th>
+                    ))}
+                    <th className="bg-slate-800/80 px-1 border-r border-slate-700 w-24 text-[9px]">RESULT SHIFTLY (MIN)</th>
+                    <th className="bg-slate-800/80 px-1 w-24 text-[9px]">RESULT SHIFTLY (%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-slate-700 h-8">
+                    <td className="border-r border-slate-700 text-center font-bold text-white italic">480</td>
+                    {hours.map((h, i) => (
+                      <td key={i} className="border-r text-center border-slate-700 text-[9px] text-white">
+                        {h.timeRange || ''}
+                      </td>
+                    ))}
+                    <td className="border-r border-slate-700" /><td className="bg-slate-900/50" />
+                  </tr>
+                  
+                  <SummaryRow label="PR" values={hours.map(h => `${h.pr || 0}%`)} percent={totals.pr} isGray />
+                  
+                  <SummaryRow 
+                    label="PDT ( MIN )" 
+                    values={manualPdt[idx]} 
+                    result={getPdtShiftTotal(idx)} 
+                    isPdt={true}
+                    canEdit={isPPIC}
+                    isLocked={isLocked}
+                    onUnlockClick={handleUnlockTrigger}
+                    onValueChange={(hIdx, val) => handlePdtChange(idx, hIdx, val)}
+                    onBlurAction={(hIdx, val) => handlePdtSubmit(idx, hIdx, val)}
+                  />
 
-          {/* RIGHT COLUMN: INFO & DAILY SUMMARY */}
-          <div className="space-y-6">
-            <div className="bg-[#111827]/70 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6 shadow-lg">
-              <h1 className='text-3xl font-black text-cyan-400 mb-6 uppercase tracking-tighter'>Shift Summary</h1>
-
-              <div className="text-end mb-6">
-                <span className='bg-cyan-400 text-black px-2 py-1 text-2xl font-black italic'>PERFORMA MC</span>
-                <br />
-                <span className='bg-cyan-400 text-black px-2 py-1 text-2xl font-black italic inline-block mt-1'>HOPPER PREFORM</span>
-              </div>
-
-              {/* Image Hopper */}
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-cyan-500/20 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-                <img
-                  src="https://enegroupltd.com/filestore/images/products/lg/bulk-hopper-4.png"
-                  alt="Hopper Preform"
-                  className="relative w-full h-auto rounded-lg border border-slate-700 shadow-2xl"
-                />
-                <p className="text-center text-[10px] font-black text-slate-500 mt-3 tracking-[0.5em] uppercase">DanIMS System</p>
-              </div>
+                  <SummaryRow label="UPDT ( MIN )" values={hours.map(h => h.updtMin)} result={totals.totalUpdtMin} percent={totals.updtPercent} />
+                  <SummaryRow label="UPST ( FREQ )" values={hours.map(h => h.upstFreq)} result={totals.totalUpstFreq} isGray />
+                </tbody>
+              </table>
             </div>
+          );
+        })}
+      </div>
 
-            {/* DAILY SUMMARY TABLE (FIXED WIDTH) */}
-            <div className="bg-[#111827]/70 backdrop-blur-sm border border-slate-700/50 rounded-xl p-5 shadow-lg ">
-              <h3 className="text-lg font-black text-cyan-300 mb-4 text-center uppercase tracking-widest border-b border-slate-800 pb-2">
-                Daily Summary
-              </h3>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[11px] border-collapse">
-                  <thead>
-                    <tr className="bg-slate-800/60 text-slate-400">
-                      <th className="p-2 text-left">PARA</th>
-                      <th className="p-2 text-center">S1</th>
-                      <th className="p-2 text-center">S2</th>
-                      <th className="p-2 text-center">S3</th>
-                      <th className="p-2 text-center bg-cyan-900/20 text-cyan-300 font-bold">AVG (%)</th>
-                      <th className="p-2 text-center bg-slate-900">TOT (MIN)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="font-bold">
-                    <tr className="border-t border-slate-700/50">
-                      <td className="p-3 text-slate-400 uppercase">PR</td>
-                      <td className="p-3 text-center">{dailySummary.pr[0]}</td>
-                      <td className="p-3 text-center">{dailySummary.pr[1]}</td>
-                      <td className="p-3 text-center">{dailySummary.pr[2]}</td>
-                      <td className="p-3 text-center text-green-400 bg-cyan-900/10">{dailySummary.pr[3]}</td>
-                      <td className="p-3 text-center bg-slate-900">-</td>
-                    </tr>
-                    <tr className="border-t border-slate-700/50">
-                      <td className="p-3 text-slate-400 uppercase">PDT</td>
-                      <td className="p-3 text-center">{dailySummary.pdtMin[0]}</td>
-                      <td className="p-3 text-center">{dailySummary.pdtMin[1]}</td>
-                      <td className="p-3 text-center">{dailySummary.pdtMin[2]}</td>
-                      <td className="p-3 text-center text-green-400 bg-cyan-900/10">{dailySummary.pdtMin[3]}</td>
-                      <td className="p-3 text-center bg-slate-900 font-black">{dailySummary.pdtMin[4]}</td>
-                    </tr>
-                    <tr className="border-t border-slate-700/50">
-                      <td className="p-3 text-slate-400 uppercase">UPDT</td>
-                      <td className="p-3 text-center">{dailySummary.updtMin[0]}</td>
-                      <td className="p-3 text-center">{dailySummary.updtMin[1]}</td>
-                      <td className="p-3 text-center">{dailySummary.updtMin[2]}</td>
-                      <td className="p-3 text-center text-cyan-400 bg-cyan-900/10">{dailySummary.updtMin[3]}</td>
-                      <td className="p-3 text-center bg-slate-900 font-black">{dailySummary.updtMin[4]}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
+      {/* RIGHT: Daily Summary */}
+      <div className="w-full lg:w-[450px] flex flex-col items-end">
+        <div className="text-right mb-10 mt-10">
+          <h1 className="bg-cyan-200 text-black text-4xl font-black italic px-4 py-1 inline-block uppercase shadow-[4px_4px_0_#0e7490]">PERFORMA MC</h1><br />
+          <h1 className="bg-cyan-200 text-black text-4xl font-black italic px-4 py-1 inline-block mt-2 uppercase shadow-[4px_4px_0_#0e7490]">{currentMachine.name}</h1>
+          <div className="flex justify-end mt-4">
+            <ImgLoader src={currentMachine.img} alt={currentMachine.shortName} className="h-28 object-contain" />
           </div>
+        </div>
+
+        <div className="w-full border mt-60 border-slate-700 bg-black/40 shadow-2xl rounded-lg overflow-hidden">
+          <table className="w-full text-[12px] border-collapse font-bold">
+            <thead>
+              <tr className="h-14 border-b border-slate-700 bg-slate-900/80 text-[10px]">
+                <th className="border-r border-slate-700 px-4 text-white uppercase italic text-left">Daily Summary</th>
+                <th className="px-2 font-light border-r border-slate-700">SH 1</th>
+                <th className="px-2 font-light border-r border-slate-700">SH 2</th>
+                <th className="px-2 font-light border-r border-slate-700">SH 3</th>
+                <th className="px-2 text-white border-r border-slate-700">RESULT Daily%</th>
+                <th className="px-2 text-slate-400 text-[9px]">TOTAL</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-slate-700 h-12">
+                <td className="border-r border-slate-700 px-2 text-slate-400 italic text-[10px]">PR</td>
+                {dailyData?.shifts?.map((s, i) => <td key={i} className="border-r border-slate-700 text-center font-mono">{s.pr}%</td>)}
+                <td className="border-r border-slate-700 text-center text-white">{dailyData?.daily?.pr}%</td>
+                <td className="text-center">-</td>
+              </tr>
+              
+              <tr className="border-b border-slate-700 h-12 bg-cyan-950/40">
+                <td className="border-r border-slate-700 px-2 text-cyan-500 italic text-[10px]">PDT (MIN)</td>
+                <td className="border-r border-slate-700 text-center font-mono text-cyan-400">{getPdtShiftTotal(0)}</td>
+                <td className="border-r border-slate-700 text-center font-mono text-cyan-400">{getPdtShiftTotal(1)}</td>
+                <td className="border-r border-slate-700 text-center font-mono text-cyan-400">{getPdtShiftTotal(2)}</td>
+                <td className="border-r border-slate-700 text-center">-</td>
+                <td className="text-center font-mono text-cyan-400">
+                  {}
+                </td>
+              </tr>
+
+              <tr className="border-b border-slate-700 h-12">
+                <td className="border-r border-slate-700 px-2 text-slate-400 italic text-[10px]">UPDT (MIN)</td>
+                {dailyData?.shifts?.map((s, i) => <td key={i} className="border-r border-slate-700 text-center font-mono">{s.updtMin}</td>)}
+                <td className="border-r border-slate-700 text-center text-white">{dailyData?.daily?.updtPercent}%</td>
+                <td className="text-center text-white font-mono">{Math.round(dailyData?.daily?.updtMin || 0)}</td>
+              </tr>
+              <tr className="border-b border-slate-700 h-12">
+                <td className="border-r border-slate-700 px-2 text-slate-400 italic text-[10px]">UPST (FREQ)</td>
+                {dailyData?.shifts?.map((s, i) => <td key={i} className="border-r border-slate-700 text-center font-mono">{s.upstFreq}</td>)}
+                <td className="border-r border-slate-700 text-center text-white">{dailyData?.daily?.upstPercent}%</td>
+                <td className="text-center text-white font-mono">{Math.round(dailyData?.daily?.upstFreq || 0)}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
