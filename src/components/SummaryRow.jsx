@@ -9,8 +9,6 @@ export const SummaryRow = ({
     <tr className={`border-b border-slate-700 h-10 ${isPdt ? 'bg-cyan-950/20' : ''}`}>
       <td className="border-r border-slate-700 px-2 flex items-center justify-between h-10">
         <span className={`font-bold text-[10px] ${isPdt ? 'text-cyan-400' : 'text-slate-400'}`}>{label}</span>
-        
-        {/* BUTTON UNLOCK KHUSUS BARIS PDT */}
         {isPdt && canEdit && (
           <button 
             onClick={onUnlockClick}
@@ -23,7 +21,6 @@ export const SummaryRow = ({
       </td>
 
       {[...Array(8)].map((_, i) => {
-        // Input hanya aktif jika User adalah PPIC DAN status sudah Unlocked
         const inputActive = isPdt && canEdit && !isLocked;
 
         return (
