@@ -19,8 +19,8 @@ export default function Home() {
                     to={`/screen-delivery/${lineId || '1'}`}
                     className="absolute z-20 w-[6%] h-[4%] bg-blue-500/50 hover:bg-blue-500/80 rounded transition-all"
                     style={{
-                        top: '43%',   // ⬅️ ganti sesuai posisi di gambar
-                        left: '37%',  // ⬅️ ganti sesuai posisi di gambar
+                        top: '43%', 
+                        left: '37%',
                         transform: 'translate(-50%, -50%) rotate(40deg)'
                     }}
                 >
