@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useContext } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { authContext } from '../contexts/AuthContext'; // Pastikan path benar
+import { authContext } from '../contexts/AuthContext';
 import { 
   getShiftSummary, 
   getDailySummary, 
@@ -12,7 +12,6 @@ import { SummaryRow } from '../components/SummaryRow';
 import Button from '../components/Button';
 import ImgLoader from '../components/ImgLoader';
 
-// Assets
 import cnyImg from '../assets/shiftSum/CNY.png';
 import cprImg from '../assets/shiftSum/CPR.png';
 import flrImg from '../assets/shiftSum/FLR.png';
@@ -34,7 +33,7 @@ const MACHINE_METADATA = {
 export default function ShiftSummary() {
   const navigate = useNavigate();
   const { machineId } = useParams();
-  const { user } = useContext(authContext); // Mengambil user & role dari context
+  const { user } = useContext(authContext); 
   
   const currentMachine = MACHINE_METADATA[machineId] || { dbId: 1, name: machineId, shortName: 'MC', img: null };
   const isPPIC = user?.role === 'PPIC';
@@ -76,7 +75,6 @@ export default function ShiftSummary() {
       
       setShiftData([s1.data, s2.data, s3.data]);
       setDailyData(daily.data);
-      // Filter PDT berdasarkan machineId integer dari metadata
       setPdtRecords(pdtList.data.filter(r => r.machineId === currentMachine.dbId));
       
     } catch (err) {
@@ -92,12 +90,11 @@ export default function ShiftSummary() {
     return () => clearInterval(pollInterval);
   }, [fetchAllData]);
 
-  // HANDLE UNLOCK ACTION (Khusus PPIC)
   const handleUnlockTrigger = async () => {
     const lockedRec = pdtRecords.find(r => r.isLocked === true);
     if (!lockedRec) return alert("Data sudah terbuka atau tidak ada data locked.");
 
-    const password = prompt("Masukkan Password Unlock (AQUA123):");
+    const password = prompt("Masukkan Password Unlock");
     if (!password) return;
 
     try {
@@ -114,8 +111,6 @@ export default function ShiftSummary() {
       alert("Gagal Unlock: " + (err.response?.data?.message || "Password Salah"));
     }
   };
-
-  // HANDLE INPUT PDT (Hanya bisa diklik jika sudah Unlocked)
   const handlePdtSubmit = async (shiftIdx, hourIdx, value) => {
     try {
       await createPdt({
@@ -362,7 +357,7 @@ export default function ShiftSummary() {
                 <td className="border-r border-slate-700 text-center font-mono text-cyan-400">{getPdtShiftTotal(2)}</td>
                 <td className="border-r border-slate-700 text-center">-</td>
                 <td className="text-center font-mono text-cyan-400">
-                  {getPdtShiftTotal(0) + getPdtShiftTotal(1) + getPdtShiftTotal(2)}
+                  {}
                 </td>
               </tr>
 
