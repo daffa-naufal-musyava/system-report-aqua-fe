@@ -47,9 +47,8 @@ export default function ShiftSummary() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [autoReportMode, setAutoReportMode] = useState(false);
   const [reportFreq, setReportFreq] = useState('weekly');
+  const [reportFormat, setReportFormat] = useState('pdf');
   const [isDownloading, setIsDownloading] = useState(false);
-
-  // State PDT Manual (3 Shift x 8 Jam)
   const [manualPdt, setManualPdt] = useState([
     [0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0],
@@ -143,11 +142,11 @@ export default function ShiftSummary() {
       if (autoReportMode) {
          // Endpoint untuk Mode Auto Download / Berkala (Download berformat Excel)
          activeFormat = 'excel';
-         url = `https://66c10dvz-3006.asse.devtunnels.ms/api/reports/download?format=${activeFormat}&machineId=${currentMachine.dbId}&period=${reportFreq}`;
+         url = `https://66c10dvz-3006.asse.devtunnels.ms/api/shift-summary/${reportFreq}?machineId=%27${machineId}%27&format=${activeFormat}`;
       } else {
-         // Endpoint untuk Download Manual Sekarang (Download berformat PDF)
-         activeFormat = 'pdf';
-         url = `https://66c10dvz-3006.asse.devtunnels.ms/api/reports/manual-save?format=${activeFormat}&machineId=${currentMachine.dbId}`;
+         // Endpoint untuk Download Manual Sekarang (Format Sesuai Pilihan)
+         activeFormat = reportFormat;
+         url = `https://66c10dvz-3006.asse.devtunnels.ms/api/shift-summary/${reportFreq}?machineId=%27${machineId}%27&format=${activeFormat}`;
       }
             
       const response = await fetch(url);      
@@ -163,7 +162,9 @@ export default function ShiftSummary() {
       linkTag.href = urlBlob;
       
       // Beri nama file berbeda sesuai mode
-      const fileNameMode = autoReportMode ? `Auto_Mingguan` : `Manual`;
+      const periodMap = { daily: 'Harian', weekly: 'Mingguan', monthly: 'Bulanan' };
+      const periodName = periodMap[reportFreq] || reportFreq;
+      const fileNameMode = autoReportMode ? `Auto_${periodName}` : `Manual_${periodName}`;
       linkTag.setAttribute('download', `Laporan_Shift_${fileNameMode}_${currentMachine.name}_${new Date().getTime()}.${activeFormat === 'excel' ? 'xlsx' : 'pdf'}`);
       
       document.body.appendChild(linkTag);
@@ -207,22 +208,20 @@ export default function ShiftSummary() {
                  <h3 className="text-sm font-bold text-slate-300">Frekuensi Penarikan Laporan</h3>
                  <div className="flex flex-wrap gap-5 mt-1">
                    {['daily', 'weekly', 'monthly'].map(freq => (
-                     <label key={freq} className={`flex items-center gap-2 ${freq !== 'weekly' ? 'cursor-not-allowed opacity-40' : 'cursor-pointer group'}`}>
+                     <label key={freq} className="flex items-center gap-2 cursor-pointer group">
                        <input 
                          type="radio" 
                          value={freq} 
                          checked={reportFreq === freq} 
                          onChange={(e) => setReportFreq(e.target.value)} 
-                         disabled={freq !== 'weekly'}
                          className="accent-cyan-500 w-4 h-4 cursor-pointer" 
                        />
-                       <span className={`text-sm text-gray-300 capitalize font-medium ${freq === 'weekly' ? 'group-hover:text-white transition-colors' : ''}`}>
+                       <span className="text-sm text-gray-300 capitalize font-medium group-hover:text-white transition-colors">
                          {freq === 'daily' ? 'Per Hari' : freq === 'weekly' ? 'Per Minggu' : 'Per Bulan'}
                        </span>
                      </label>
                    ))}
                  </div>
-                 <p className="text-[10px] text-gray-500 italic mt-1">*Saat ini endpoint hanya support penarikan laporan Per Minggu</p>
               </div>
 
               {/* Auto Mode */}
@@ -237,15 +236,38 @@ export default function ShiftSummary() {
                 </label>
               </div>
 
+              {/* Format Laporan (Only for Manual Mode) */}
+              {!autoReportMode && (
+                <div className="p-4 bg-slate-900/80 rounded-xl border border-slate-800 flex flex-col gap-3 transition-opacity">
+                   <h3 className="text-sm font-bold text-slate-300">Format Laporan</h3>
+                   <div className="flex flex-wrap gap-5 mt-1">
+                     {['pdf', 'excel'].map(fmt => (
+                       <label key={fmt} className="flex items-center gap-2 cursor-pointer group">
+                         <input 
+                           type="radio" 
+                           value={fmt} 
+                           checked={reportFormat === fmt} 
+                           onChange={(e) => setReportFormat(e.target.value)} 
+                           className="accent-cyan-500 w-4 h-4 cursor-pointer" 
+                         />
+                         <span className="text-sm text-gray-300 uppercase font-medium group-hover:text-white transition-colors">
+                           {fmt}
+                         </span>
+                       </label>
+                     ))}
+                   </div>
+                </div>
+              )}
+
 
 
               {/* Info Text */}
               <div className="p-4 bg-cyan-950/30 rounded-xl border border-cyan-900/50 flex gap-3 items-start">
                 <svg className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"></path></svg>
                 <p className="text-xs text-cyan-200 leading-relaxed">
-                  <b>Download Berbeda Format:</b><br />
-                  Mode Manual akan mengunduh format <b>PDF</b>.<br />
-                  Mode Otomatis (Per Minggu) akan mengunduh format <b>Excel (.xlsx)</b>.
+                  <b>Informasi Download:</b><br />
+                  Mode Manual akan mengunduh format <b>{reportFormat.toUpperCase()}</b>.<br />
+                  Mode Otomatis akan mengunduh format <b>Excel (.xlsx)</b>.
                 </p>
               </div>
               
