@@ -24,12 +24,12 @@ export default function LineDetail() {
 
     // Map machineId dari API ke posisi UI kamu
     const machinePositions = {
-        'AQ-PLT-01': { top: '18%', left: '10%', width: '12%', height: '18%', name: 'Palletizer Robot', use: true },
+        'AQ-PLT-01': { top: '18%', left: '3%', width: '12%', height: '18%', name: 'Palletizer Robot', use: true },
         'AQ-WRP-01': { top: '18%', left: '47%', width: '12%', height: '7%', name: 'Wrapper 1', use: true },
         'AQ-WRP-02': { top: '20%', left: '35%', width: '12%', height: '7%', name: 'Wrapper 2', use: true },
-        'AQ-CAP-01': { top: '80%', left: '78%', width: '10%', height: '12%', name: 'Capper Rotary', use: true },
-        'AQ-BLW-01': { top: '43%', left: '73%', width: '12%', height: '0%', name: 'Blower Alpha', use: true },
-        'AQ-FIL-01': { top: '90%', left: '71.4%', width: '12%', height: '0%', name: 'Filler High-Speed', use: true },
+        'AQ-CAP-01': { top: '80%', left: '88%', width: '10%', height: '12%', name: 'Capper Rotary', use: true },
+        'AQ-BLW-01': { top: '43%', left: '80%', width: '12%', height: '0%', name: 'Blower Alpha', use: true },
+        'AQ-FIL-01': { top: '90%', left: '78%', width: '12%', height: '0%', name: 'Filler High-Speed', use: true },
         'AQ-LBL-01': { top: '78%', left: '33.5%', width: '12%', height: '12%', name: 'Labeler Front', use: true },
         'AQ-CON-01': { top: '60%', left: '54%', width: '12%', height: '0%', name: 'Panel Conveyor', use: true },
         'AQ-CAP-02': { top: '0%', left: '0%', width: '0%', height: '0%', name: 'Capper Linear', use: false },
@@ -53,7 +53,7 @@ export default function LineDetail() {
     //     setSelectedMachine(null);
     // };
 
-    if(loading && machines.length === 0) {
+    if (loading && machines.length === 0) {
         return (
             <div className="min-h-screen bg-[#0a0f1c] flex items-center justify-center text-white">
                 Syncing Real-time Topology...
@@ -75,23 +75,32 @@ export default function LineDetail() {
                 </Button>
 
                 {/* TOPOLOGY MAP SECTION */}
-                <div
-                    style={{ backgroundImage: `url(${mesintopologi})` }}
-                    className="relative h-[80vh] w-full bg-contain bg-no-repeat bg-center transition-all duration-700"
-                >
-                    {machines.map((m) => {
-                        const config = machinePositions[m.machineId];
-                        if (!config || !config.use) return null;
+                <div className="w-full overflow-x-auto overflow-y-auto">
+                    <div className="relative min-w-[900px] aspect-[16/9] max-h-[80vh] mx-auto">
 
-                        return (
-                            <MachineNode
-                                key={m.machineId}
-                                machine={m}
-                                position={config}
-                                onClick={setSelectedMachine}
-                            />
-                        );
-                    })}
+                        {/* IMAGE */}
+                        <img
+                            src={mesintopologi}
+                            alt="Machine Topology"
+                            className="absolute inset-0 w-full h-full object-contain pointer-events-none select-none"
+                        />
+
+                        {/* MACHINE NODES */}
+                        {machines.map((m) => {
+                            const config = machinePositions[m.machineId];
+                            if (!config || !config.use) return null;
+
+                            return (
+                                <MachineNode
+                                    key={m.machineId}
+                                    machine={m}
+                                    position={config}
+                                    onClick={setSelectedMachine}
+                                />
+                            );
+                        })}
+
+                    </div>
                 </div>
 
                 {/* INFO BAR SECTION */}
